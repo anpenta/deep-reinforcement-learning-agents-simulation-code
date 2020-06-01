@@ -23,13 +23,13 @@ import pathlib
 import torch
 
 
-def save_model_parameters(model, directory_path, basename):
+def save_model_state_dictionary(model_state_dictionary, directory_path, basename):
   pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
-  print("Saving model's parameters | Directory path: {}".format(directory_path))
-  torch.save(model.state_dict(), "{}/{}.pt".format(directory_path, basename))
+  print("Saving model's state dictionary | Directory path: {}".format(directory_path))
+  torch.save(model_state_dictionary, "{}/{}.pt".format(directory_path, basename))
 
 
-def load_model_parameters(model_parameter_path):
-  print("Loading model's parameters | Model parameter path: {}".format(model_parameter_path))
-  model_parameters = torch.load(model_parameter_path)
-  return model_parameters
+def load_model_state_dictionary(file_path):
+  print("Loading model's state dictionary | File path: {}".format(file_path))
+  model_state_dictionary = torch.load(file_path)
+  return model_state_dictionary
