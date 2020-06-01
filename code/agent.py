@@ -59,7 +59,7 @@ class Agent:
 
   def select_action(self, state):
     epsilon = self._policy.compute_epsilon(self._step)
-    if np.random.rand() < epsilon:
+    if np.random.rand() <= epsilon:
       action = np.random.randint(4)
     else:
       action = self._model(state).argmax().item()
