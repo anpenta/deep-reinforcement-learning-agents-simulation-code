@@ -26,7 +26,11 @@ class EpsilonGreedyPolicy:
     self._min_epsilon = min_epsilon
     self._epsilon_decay_steps = epsilon_decay_steps
     self._epsilon_decay = (self._max_epsilon - self._min_epsilon) / self._epsilon_decay_steps
+    self._epsilon = self._max_epsilon
 
-  def compute_epsilon(self, step):
-    epsilon = self._max_epsilon - step * self._epsilon_decay
-    return max(epsilon, self._min_epsilon)
+  def decrease_epsilon(self):
+    if self._epsilon > self._min_epsilon:
+      self._epsilon -= self._epsilon_decay
+
+  def expose_epsilon(self):
+    return self._epsilon
