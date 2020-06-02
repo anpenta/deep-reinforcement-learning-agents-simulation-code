@@ -18,7 +18,6 @@
 # Email: anpenta01@gmail.com
 # Model of an experience replay memory.
 
-
 import collections
 import random
 

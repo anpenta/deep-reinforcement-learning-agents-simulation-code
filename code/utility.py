@@ -23,6 +23,10 @@ import pathlib
 import torch
 
 
+def print_line():
+  print("-" * 100)
+
+
 def save_model_state_dictionary(model_state_dictionary, directory_path, basename):
   pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
   print("Saving model's state dictionary | Directory path: {}".format(directory_path))
