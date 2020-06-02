@@ -30,19 +30,19 @@ def simulate_training_episodes(agent, environment, episodes, visualize=False):
   for episode in range(1, episodes + 1):
     total_reward = 0
     total_time_steps = 0
-    state = environment.reset()
+    observation = environment.reset()
     done = False
     while not done:
       if visualize:
         environment.render()
 
-      action = agent.select_action(state)
-      next_state, reward, done, _ = environment.step(action)
-      agent.step(state, action, reward, next_state, done)
+      action = agent.select_action(observation)
+      next_observation, reward, done, _ = environment.step(action)
+      agent.step(observation, action, reward, next_observation, done)
 
       total_reward += reward
       total_time_steps += 1
-      state = next_state
+      observation = next_observation
 
     print("Episode: {:>5}".format(episode), sep=" ", end="", flush=True)
     print(" | Total time steps: {:>4}".format(total_time_steps), sep=" ", end="", flush=True)

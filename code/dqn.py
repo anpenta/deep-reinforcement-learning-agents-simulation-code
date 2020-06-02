@@ -24,9 +24,9 @@ import torch.nn.functional as F
 
 class DQN(nn.Module):
 
-  def __init__(self, state_space_size, action_space_size):
+  def __init__(self, observation_space_size, action_space_size):
     super().__init__()
-    self._linear_1 = nn.Linear(state_space_size, 256)
+    self._linear_1 = nn.Linear(observation_space_size, 256)
     self._linear_2 = nn.Linear(256, 256)
     self._output = nn.Linear(256, action_space_size)
 

@@ -29,7 +29,7 @@ import replay_memory
 
 class Agent:
 
-  def __init__(self, state_space_size, action_space_size):
+  def __init__(self, observation_space_size, action_space_size):
     self._gamma = 0.99
     self._max_epsilon = 1
     self._min_epsilon = 0.05
@@ -39,14 +39,14 @@ class Agent:
     self._batch_size = 32
     self._target_update_frequency = 1000
 
-    self._state_space_size = state_space_size
+    self._observation_space_size = observation_space_size
     self._action_space_size = action_space_size
     self._policy = epsilon_greedy_policy.EpsilonGreedyPolicy(self._max_epsilon, self._min_epsilon,
                                                              self._epsilon_decay_steps)
     self._replay_memory = replay_memory.ReplayMemory(self._replay_memory_capacity)
     self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    self._model = dqn.DQN(state_space_size, action_space_size).to(self._device)
-    self._target_model = dqn.DQN(state_space_size, action_space_size).to(self._device)
+    self._model = dqn.DQN(observation_space_size, action_space_size).to(self._device)
+    self._target_model = dqn.DQN(observation_space_size, action_space_size).to(self._device)
     self._target_model.eval()
     self._update_target_model()
     self._optimizer = optim.Adam(self._model.parameters(), lr=self._learning_rate)
@@ -59,22 +59,21 @@ class Agent:
   def _replay_experience(self):
     minibatch = self._replay_memory.sample_minibatch(self._batch_size)
 
-  def select_action(self, state):
-    state = torch.from_numpy(state).float().to(self._device)
-
+  def select_action(self, observation):
     if np.random.rand() <= self._policy.expose_epsilon():
       action = np.random.randint(self._action_space_size)
     else:
-      action = self._model(state).argmax().item()
+      observation = torch.from_numpy(observation).float().to(self._device)
+      action = self._model(observation).argmax().item()
 
     self._policy.decrease_epsilon()
 
     return action
 
-  def step(self, state, action, reward, next_state, done):
+  def step(self, observation, action, reward, next_observation, done):
     self._step += 1
 
-    self._replay_memory.store_experience(state, action, reward, next_state, done)
+    self._replay_memory.store_experience(observation, action, reward, next_observation, done)
 
     if self._replay_memory.can_provide_minibatch(self._batch_size):
       self._replay_experience()

@@ -27,8 +27,8 @@ class ReplayMemory:
   def __init__(self, memory_capacity):
     self._memory = collections.deque(maxlen=memory_capacity)
 
-  def store_experience(self, state, action, reward, next_state, done):
-    self._memory.append((state, action, reward, next_state, done))
+  def store_experience(self, observation, action, reward, next_observation, done):
+    self._memory.append((observation, action, reward, next_observation, done))
 
   def can_provide_minibatch(self, batch_size):
     return len(self._memory) >= batch_size
