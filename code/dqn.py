@@ -18,29 +18,21 @@
 # Email: anpenta01@gmail.com
 # Model of a deep Q network.
 
-
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class DQN(nn.Module):
 
-  def __init__(self):
+  def __init__(self, state_space_size, action_space_size):
     super().__init__()
-    self._convolutional_1 = nn.Conv2d(1, 32, 8, stride=4)
-    self._convolutional_2 = nn.Conv2d(32, 64, 8, stride=2)
-    self._convolutional_3 = nn.Conv2d(64, 64, 3, stride=1)
-    self._linear = nn.Linear(64 * 5 * 5, 512)
-    self._output = nn.Linear(512, 4)
+    self._linear_1 = nn.Linear(state_space_size, 256)
+    self._linear_2 = nn.Linear(256, 256)
+    self._output = nn.Linear(256, action_space_size)
 
   def forward(self, x):
-    x = x.view(-1, 1, 84, 84)
-    x = F.relu(self._convolutional_1(x))
-    x = F.relu(self._convolutional_2(x))
-    x = F.relu(self._convolutional_3(x))
-
-    x = x.view(-1)
-    x = F.relu(self._linear(x))
+    x = F.relu(self._linear_1(x))
+    x = F.relu(self._linear_2(x))
     x = F.relu(self._output(x))
 
     return x
