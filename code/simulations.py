@@ -22,7 +22,31 @@
 import utility
 
 
-def simulate_training_episodes(agent, environment, episodes, visualize=False):
+def simulate_visual_test_episode(agent, environment):
+  utility.print_line()
+  print("Simulating a visual test episode")
+  utility.print_line()
+
+  total_reward = 0
+  total_time_steps = 0
+  observation = environment.reset()
+  done = False
+  while not done:
+    environment.render()
+
+    action = agent.select_action(observation)
+    next_observation, reward, done, _ = environment.step(action)
+
+    total_reward += reward
+    total_time_steps += 1
+    observation = next_observation
+
+  print("Total time steps: {:>4}".format(total_time_steps), sep=" ", end="", flush=True)
+  print(" | Total reward gained: {:>5}".format(total_reward))
+  print()
+
+
+def simulate_training_episodes(agent, environment, episodes, visual_evaluation_frequency=0):
   utility.print_line()
   print("Simulating {} training episode(s)".format(episodes))
   utility.print_line()
@@ -33,9 +57,6 @@ def simulate_training_episodes(agent, environment, episodes, visualize=False):
     observation = environment.reset()
     done = False
     while not done:
-      if visualize:
-        environment.render()
-
       action = agent.select_action(observation)
       next_observation, reward, done, _ = environment.step(action)
       agent.step(observation, action, reward, next_observation, done)
@@ -47,3 +68,8 @@ def simulate_training_episodes(agent, environment, episodes, visualize=False):
     print("Episode: {:>5}".format(episode), sep=" ", end="", flush=True)
     print(" | Total time steps: {:>4}".format(total_time_steps), sep=" ", end="", flush=True)
     print(" | Total reward gained: {:>5}".format(total_reward))
+
+    if visual_evaluation_frequency and episode % visual_evaluation_frequency == 0:
+      print()
+      print("Visually evaluating agent after episode {}".format(episode))
+      simulate_visual_test_episode(agent, environment)
