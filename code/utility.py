@@ -18,13 +18,29 @@
 # Email: anpenta01@gmail.com
 # Utility functions to run deep reinforcement learning simulations.
 
+import os
 import pathlib
+import random
 
+import numpy as np
 import torch
 
 
 def print_line():
   print("-" * 100)
+
+
+# TODO: Debug control_randomness
+def control_randomness(seed):
+  np.random.seed(seed)
+  torch.manual_seed(seed)
+  random.seed(seed)
+  os.environ["PYTHONHASHSEED"] = str(seed)
+  if torch.cuda.is_available():
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def save_model_state_dictionary(model_state_dictionary, directory_path, basename):

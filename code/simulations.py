@@ -19,6 +19,8 @@
 # Helper functions to run reinforcement learning simulations.
 # In every simulation function we start counting time steps from 0.
 
+import time
+
 import utility
 
 
@@ -33,6 +35,7 @@ def simulate_visual_test_episode(agent, environment):
   done = False
   while not done:
     environment.render()
+    time.sleep(0.1)
 
     action = agent.select_action(observation)
     next_observation, reward, done, _ = environment.step(action)

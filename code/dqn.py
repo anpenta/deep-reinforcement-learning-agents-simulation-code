@@ -26,13 +26,11 @@ class DQN(nn.Module):
 
   def __init__(self, observation_space_size, action_space_size):
     super().__init__()
-    self._linear_1 = nn.Linear(observation_space_size, 256)
-    self._linear_2 = nn.Linear(256, 256)
-    self._output = nn.Linear(256, action_space_size)
+    self._hidden = nn.Linear(observation_space_size, 128)
+    self._output = nn.Linear(128, action_space_size)
 
   def forward(self, x):
-    x = F.relu(self._linear_1(x))
-    x = F.relu(self._linear_2(x))
+    x = F.relu(self._hidden(x))
     x = F.relu(self._output(x))
 
     return x

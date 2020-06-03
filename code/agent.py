@@ -32,12 +32,12 @@ class Agent:
   def __init__(self, observation_space_size, action_space_size):
     self._gamma = 0.99
     self._max_epsilon = 1
-    self._min_epsilon = 0.05
-    self._epsilon_decay_steps = 10000
+    self._min_epsilon = 0.01
+    self._epsilon_decay_steps = 100000
     self._epsilon_decay = (self._max_epsilon - self._min_epsilon) / self._epsilon_decay_steps
     self._replay_memory_capacity = 100000
     self._learning_rate = 0.001
-    self._batch_size = 32
+    self._batch_size = 128
     self._target_model_update_frequency = 1000
 
     self._observation_space_size = observation_space_size
@@ -80,7 +80,8 @@ class Agent:
       action = np.random.randint(self._action_space_size)
     else:
       observation = torch.from_numpy(observation).float().to(self._device)
-      action = self._model(observation).argmax().item()
+      with torch.no_grad():
+        action = self._model(observation).argmax().item()
 
     return action
 
