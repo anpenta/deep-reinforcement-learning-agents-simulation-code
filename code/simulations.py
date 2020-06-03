@@ -49,11 +49,13 @@ def simulate_visual_test_episode(agent, environment):
   print()
 
 
-def simulate_training_episodes(agent, environment, episodes, visual_evaluation_frequency=0):
+def simulate_training_episodes(agent, environment, episodes, visual_evaluation_frequency=0, verbose=False):
   utility.print_line()
   print("Simulating {} training episode(s)".format(episodes))
   utility.print_line()
 
+  episode_total_rewards = []
+  episode_total_time_steps = []
   for episode in range(1, episodes + 1):
     total_reward = 0
     total_time_steps = 0
@@ -68,11 +70,17 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
       total_time_steps += 1
       observation = next_observation
 
-    print("Episode: {:>5}".format(episode), sep=" ", end="", flush=True)
-    print(" | Total time steps: {:>4}".format(total_time_steps), sep=" ", end="", flush=True)
-    print(" | Total reward gained: {:>5}".format(total_reward))
+    episode_total_rewards.append(total_reward)
+    episode_total_time_steps.append(total_time_steps)
+
+    if verbose:
+      print("Episode: {:>5}".format(episode), sep=" ", end="", flush=True)
+      print(" | Total time steps: {:>4}".format(total_time_steps), sep=" ", end="", flush=True)
+      print(" | Total reward gained: {:>5}".format(total_reward))
 
     if visual_evaluation_frequency and episode % visual_evaluation_frequency == 0:
       print()
       print("Visually evaluating agent after episode {}".format(episode))
       simulate_visual_test_episode(agent, environment)
+
+  return episode_total_rewards, episode_total_time_steps

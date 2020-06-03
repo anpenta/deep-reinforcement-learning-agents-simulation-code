@@ -22,12 +22,45 @@ import os
 import pathlib
 import random
 
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
+
+matplotlib.use("Agg")
+plt.rcParams.update({"font.size": 12})
 
 
 def print_line():
   print("-" * 100)
+
+
+def save_training_plots(directory_path, episode_total_rewards, episode_total_time_steps, algorithm):
+  pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
+  print("Saving training plots | Directory path: {}".format(directory_path))
+
+  plot_title = format_algorithm_for_plot(algorithm)
+
+  plt.plot(episode_total_rewards)
+  plt.title(plot_title)
+  plt.ylabel("Total reward")
+  plt.xlabel("Episode")
+  plt.savefig("{}/{}-episode-total-rewards".format(directory_path, algorithm))
+  plt.close()
+
+  plt.plot(episode_total_time_steps)
+  plt.title(plot_title)
+  plt.ylabel("Total time steps")
+  plt.xlabel("Episode")
+  plt.savefig("{}/{}-episode-total-time-steps".format(directory_path, algorithm))
+  plt.close()
+
+
+def format_algorithm_for_plot(algorithm):
+  if algorithm == "deep-q-learning":
+    return "Deep Q-learning"
+  else:
+    return None
 
 
 # TODO: Debug control_randomness

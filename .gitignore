@@ -6,3 +6,6 @@ code/__pycache__
 
 # Code testing.
 code/test.py
+
+# Output.
+output
