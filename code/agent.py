@@ -68,7 +68,7 @@ class Agent:
     state_action_values = self._model(observation_samples).gather(1, action_samples.unsqueeze(1))
     next_state_values = self._target_model(next_observation_samples).max(1)[0]
     next_state_values[done_samples] = 0
-    update_targets = reward_samples + self._gamma * next_state_values
+    update_targets = (reward_samples + self._gamma * next_state_values).unsqueeze(1)
 
     loss = F.mse_loss(state_action_values, update_targets)
     self._optimizer.zero_grad()

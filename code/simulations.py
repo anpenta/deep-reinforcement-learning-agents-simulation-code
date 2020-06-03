@@ -35,7 +35,7 @@ def simulate_visual_test_episode(agent, environment):
   done = False
   while not done:
     environment.render()
-    time.sleep(0.1)
+    time.sleep(0.05)
 
     action = agent.select_action(observation)
     next_observation, reward, done, _ = environment.step(action)
