@@ -35,24 +35,24 @@ def print_line():
   print("-" * 100)
 
 
-def save_training_plots(directory_path, episode_total_rewards, episode_total_time_steps, algorithm):
+def save_training_plots(directory_path, total_reward_per_episode, total_time_steps_per_episode, algorithm):
   pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
   print("Saving training plots | Directory path: {}".format(directory_path))
 
   plot_title = format_algorithm_for_plot(algorithm)
 
-  plt.plot(episode_total_rewards)
+  plt.plot(total_reward_per_episode)
   plt.title(plot_title)
-  plt.ylabel("Total reward")
+  plt.ylabel("Total reward per episode")
   plt.xlabel("Episode")
-  plt.savefig("{}/{}-episode-total-rewards".format(directory_path, algorithm))
+  plt.savefig("{}/{}-total-reward-per-episode".format(directory_path, algorithm))
   plt.close()
 
-  plt.plot(episode_total_time_steps)
+  plt.plot(total_time_steps_per_episode)
   plt.title(plot_title)
-  plt.ylabel("Total time steps")
+  plt.ylabel("Total time steps per episode")
   plt.xlabel("Episode")
-  plt.savefig("{}/{}-episode-total-time-steps".format(directory_path, algorithm))
+  plt.savefig("{}/{}-total-time-steps-per-episode".format(directory_path, algorithm))
   plt.close()
 
 
@@ -63,7 +63,13 @@ def format_algorithm_for_plot(algorithm):
     return None
 
 
-# TODO: Debug control_randomness
+def compute_cumulative_moving_average(values):
+  cumulative_sum = np.cumsum(values)
+  cumulative_length = np.arange(1, values.size + 1)
+  cumulative_moving_average = np.divide(cumulative_sum, cumulative_length)
+  return cumulative_moving_average
+
+# TODO: Debug control_randomness.
 def control_randomness(seed):
   np.random.seed(seed)
   torch.manual_seed(seed)
@@ -76,6 +82,7 @@ def control_randomness(seed):
     torch.backends.cudnn.benchmark = False
 
 
+# TODO: Improve save and load model state dictionary functionality.
 def save_model_state_dictionary(model_state_dictionary, directory_path, basename):
   pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
   print("Saving model's state dictionary | Directory path: {}".format(directory_path))

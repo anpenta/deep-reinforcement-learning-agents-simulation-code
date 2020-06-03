@@ -18,8 +18,6 @@
 # Email: anpenta01@gmail.com
 # Model of an experience replay memory.
 
-import random
-
 import numpy as np
 
 
