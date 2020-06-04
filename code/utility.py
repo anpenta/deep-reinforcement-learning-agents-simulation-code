@@ -92,18 +92,6 @@ def control_randomness(seed):
     torch.backends.cudnn.deterministic = True
 
 
-def save_model_state_dictionary(model_state_dictionary, directory_path, basename):
-  pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
-  print("Saving model's state dictionary | Directory path: {}".format(directory_path))
-  torch.save(model_state_dictionary, "{}/{}.pt".format(directory_path, basename))
-
-
-def load_model_state_dictionary(file_path):
-  print("Loading model's state dictionary | File path: {}".format(file_path))
-  model_state_dictionary = torch.load(file_path)
-  return model_state_dictionary
-
-
 def handle_input_argument_errors(input_arguments):
   if input_arguments.episodes < input_arguments.visual_evaluation_frequency:
     raise ValueError("value of visual_evaluation_frequency is greater than value of episodes")

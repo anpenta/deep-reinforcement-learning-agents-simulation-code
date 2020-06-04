@@ -20,14 +20,14 @@
 
 import simulations
 import utility
-import agent
+import agents
 
 input_arguments = utility.parse_input_arguments()
 
 environment = utility.create_environment(input_arguments.environment_name)
 observation_space_size = environment.observation_space.shape[0]
 action_space_size = environment.action_space.n
-agent = agent.Agent(observation_space_size, action_space_size)
+agent = agents.Agent(observation_space_size, action_space_size)
 
 if input_arguments.simulation_function == "training_episodes":
   utility.control_randomness(input_arguments.seed)
@@ -40,3 +40,4 @@ if input_arguments.simulation_function == "training_episodes":
 
   utility.save_training_plots(input_arguments.output_path, total_reward_per_episode, total_time_steps_per_episode,
                               input_arguments.algorithm_name)
+  agent.save_network_state_dictionary(input_arguments.output_path)

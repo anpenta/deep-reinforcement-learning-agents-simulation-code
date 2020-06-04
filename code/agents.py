@@ -13,17 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-# Agent Module
+# Agents Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Model of a deep reinforcement learning agent.
+# Models of deep reinforcement learning agents.
+
+import pathlib
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-import dqn
+import networks
 import replay_memory
 
 
@@ -38,22 +40,22 @@ class Agent:
     self._replay_memory_capacity = 100000
     self._learning_rate = 0.001
     self._batch_size = 128
-    self._target_model_update_frequency = 1000
+    self._target_network_update_frequency = 1000
 
     self._observation_space_size = observation_space_size
     self._action_space_size = action_space_size
     self._replay_memory = replay_memory.ReplayMemory(self._replay_memory_capacity, observation_space_size)
     self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    self._model = dqn.DQN(observation_space_size, action_space_size).to(self._device)
-    self._target_model = dqn.DQN(observation_space_size, action_space_size).to(self._device)
-    self._target_model.eval()
-    self._update_target_model()
-    self._optimizer = optim.Adam(self._model.parameters(), lr=self._learning_rate)
+    self._network = networks.DQN(observation_space_size, action_space_size).to(self._device)
+    self._target_network = networks.DQN(observation_space_size, action_space_size).to(self._device)
+    self._target_network.eval()
+    self._update_target_network()
+    self._optimizer = optim.Adam(self._network.parameters(), lr=self._learning_rate)
     self._epsilon = self._max_epsilon
     self._step = 0
 
-  def _update_target_model(self):
-    self._target_model.load_state_dict(self._model.state_dict())
+  def _update_target_network(self):
+    self._target_network.load_state_dict(self._network.state_dict())
 
   def _preprocess_experiences(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
     observation_batch = torch.from_numpy(observation_batch).to(self._device)
@@ -65,14 +67,14 @@ class Agent:
     return observation_batch, action_batch, reward_batch, next_observation_batch, done_batch
 
   def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
-    state_action_values = self._model(observation_batch).gather(1, action_batch.unsqueeze(1))
-    next_state_values = self._target_model(next_observation_batch).max(1)[0]
+    state_action_values = self._network(observation_batch).gather(1, action_batch.unsqueeze(1))
+    next_state_values = self._target_network(next_observation_batch).max(1)[0]
     next_state_values[done_batch] = 0
     update_targets = (reward_batch + self._gamma * next_state_values).unsqueeze(1)
 
     return state_action_values, update_targets
 
-  def _optimize_model(self, state_action_values, update_targets):
+  def _optimize_network(self, state_action_values, update_targets):
     loss = F.mse_loss(state_action_values, update_targets)
     self._optimizer.zero_grad()
     loss.backward()
@@ -84,7 +86,7 @@ class Agent:
     else:
       observation = torch.from_numpy(observation).float().to(self._device)
       with torch.no_grad():
-        action = self._model(observation).argmax().item()
+        action = self._network(observation).argmax().item()
 
     return action
 
@@ -97,10 +99,20 @@ class Agent:
       experiences = self._replay_memory.sample_experiences(self._batch_size)
       experiences = self._preprocess_experiences(*experiences)
       loss_arguments = self._compute_loss_arguments(*experiences)
-      self._optimize_model(*loss_arguments)
+      self._optimize_network(*loss_arguments)
 
-    if self._step % self._target_model_update_frequency == 0:
-      self._update_target_model()
+    if self._step % self._target_network_update_frequency == 0:
+      self._update_target_network()
 
     if self._epsilon > self._min_epsilon:
       self._epsilon -= self._epsilon_decay
+
+  def save_network_state_dictionary(self, directory_path):
+    pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
+    print("Saving network's state dictionary | Directory path: {}".format(directory_path))
+    torch.save(self._network.state_dict(), "{}/{}.pt".format(directory_path, self._network.name))
+
+  def load_network_state_dictionary(self, file_path):
+    print("Loading network's state dictionary | File path: {}".format(file_path))
+    network_state_dictionary = torch.load(file_path)
+    self._network.load_state_dict(network_state_dictionary)
