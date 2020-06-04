@@ -81,15 +81,15 @@ def compute_cumulative_moving_average(values):
 
 # TODO: Debug control_randomness.
 def control_randomness(seed):
+  os.environ["PYTHONHASHSEED"] = str(seed)
+  random.seed(seed)
   np.random.seed(seed)
   torch.manual_seed(seed)
-  random.seed(seed)
-  os.environ["PYTHONHASHSEED"] = str(seed)
   if torch.cuda.is_available():
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
 
 def save_model_state_dictionary(model_state_dictionary, directory_path, basename):
@@ -136,9 +136,11 @@ def add_training_episodes_parser(subparsers, algorithm_name_choices, environment
   training_episodes_parser.add_argument("episodes", type=int, choices=episode_choices,
                                         help="number of training episodes to simulate")
   training_episodes_parser.add_argument("seed", type=int, choices=seed_choices,
-                                        help="seed value to control the randomness and get reproducible results")
+                                        help="seed value to control the randomness")
   training_episodes_parser.add_argument("visual_evaluation_frequency", type=int,
                                         help="episode frequency for visually evaluating agent; should be within range"
                                              " of training episodes and not negative; 0 suppresses visualization")
   training_episodes_parser.add_argument("output_path", help="path to directory in which to save output in; directory"
                                                             " will be created if it does not exist")
+  training_episodes_parser.add_argument("-v", "--verbose", action="store_true",
+                                        help="enables training information trace")
