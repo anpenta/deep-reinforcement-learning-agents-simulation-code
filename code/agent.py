@@ -55,21 +55,24 @@ class Agent:
   def _update_target_model(self):
     self._target_model.load_state_dict(self._model.state_dict())
 
-  def _replay_experience(self):
-    experiences = self._replay_memory.sample_experiences(self._batch_size)
-    observation_samples, action_samples, reward_samples, next_observation_samples, done_samples = experiences
+  def _preprocess_experiences(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
+    observation_batch = torch.from_numpy(observation_batch).to(self._device)
+    action_batch = torch.from_numpy(action_batch).to(self._device)
+    reward_batch = torch.from_numpy(reward_batch).to(self._device)
+    next_observation_batch = torch.from_numpy(next_observation_batch).to(self._device)
+    done_batch = torch.from_numpy(done_batch).to(self._device)
 
-    observation_samples = torch.from_numpy(observation_samples).to(self._device)
-    action_samples = torch.from_numpy(action_samples).to(self._device)
-    reward_samples = torch.from_numpy(reward_samples).to(self._device)
-    next_observation_samples = torch.from_numpy(next_observation_samples).to(self._device)
-    done_samples = torch.from_numpy(done_samples).to(self._device)
+    return observation_batch, action_batch, reward_batch, next_observation_batch, done_batch
 
-    state_action_values = self._model(observation_samples).gather(1, action_samples.unsqueeze(1))
-    next_state_values = self._target_model(next_observation_samples).max(1)[0]
-    next_state_values[done_samples] = 0
-    update_targets = (reward_samples + self._gamma * next_state_values).unsqueeze(1)
+  def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
+    state_action_values = self._model(observation_batch).gather(1, action_batch.unsqueeze(1))
+    next_state_values = self._target_model(next_observation_batch).max(1)[0]
+    next_state_values[done_batch] = 0
+    update_targets = (reward_batch + self._gamma * next_state_values).unsqueeze(1)
 
+    return state_action_values, update_targets
+
+  def _optimize_model(self, state_action_values, update_targets):
     loss = F.mse_loss(state_action_values, update_targets)
     self._optimizer.zero_grad()
     loss.backward()
@@ -91,7 +94,10 @@ class Agent:
     self._replay_memory.store_experience(observation, action, reward, next_observation, done)
 
     if len(self._replay_memory) >= self._batch_size:
-      self._replay_experience()
+      experiences = self._replay_memory.sample_experiences(self._batch_size)
+      experiences = self._preprocess_experiences(*experiences)
+      loss_arguments = self._compute_loss_arguments(*experiences)
+      self._optimize_model(*loss_arguments)
 
     if self._step % self._target_model_update_frequency == 0:
       self._update_target_model()

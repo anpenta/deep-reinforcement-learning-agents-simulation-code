@@ -51,10 +51,10 @@ class ReplayMemory:
     memory_indices = min(self._memory_counter, self._memory_capacity)
     batch_indices = np.random.choice(memory_indices, batch_size, replace=False)
 
-    observation_samples = self._observation_memory[batch_indices]
-    action_samples = self._action_memory[batch_indices]
-    reward_samples = self._reward_memory[batch_indices]
-    next_observation_samples = self._next_observation_memory[batch_indices]
-    done_samples = self._done_memory[batch_indices]
+    observation_batch = self._observation_memory[batch_indices]
+    action_batch = self._action_memory[batch_indices]
+    reward_batch = self._reward_memory[batch_indices]
+    next_observation_batch = self._next_observation_memory[batch_indices]
+    done_batch = self._done_memory[batch_indices]
 
-    return observation_samples, action_samples, reward_samples, next_observation_samples, done_samples
+    return observation_batch, action_batch, reward_batch, next_observation_batch, done_batch
