@@ -39,43 +39,39 @@ def print_line():
 
 def create_environment(environment_name):
   if environment_name == "cart-pole":
-    return gym.make("CartPole-v0")
+    environment = gym.make("CartPole-v0")
   else:
-    return None
+    environment = None
+
+  return environment
 
 
-def save_training_plots(directory_path, total_reward_per_episode, total_time_steps_per_episode, algorithm_name):
+def save_training_plot(directory_path, total_reward_per_episode, algorithm_name):
   pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
-  print("Saving training plots | Directory path: {}".format(directory_path))
-
-  plot_title = format_algorithm_name_for_plot(algorithm_name)
+  print("Saving training plot | Directory path: {}".format(directory_path))
 
   plt.plot(total_reward_per_episode)
-  plt.title(plot_title)
+  plt.title(format_algorithm_name_for_plot(algorithm_name))
   plt.ylabel("Total reward per episode")
   plt.xlabel("Number of episodes")
   plt.savefig("{}/{}-total-reward-per-episode".format(directory_path, algorithm_name))
   plt.close()
 
-  plt.plot(total_time_steps_per_episode)
-  plt.title(plot_title)
-  plt.ylabel("Total time steps per episode")
-  plt.xlabel("Number of episodes")
-  plt.savefig("{}/{}-total-time-steps-per-episode".format(directory_path, algorithm_name))
-  plt.close()
-
 
 def format_algorithm_name_for_plot(algorithm_name):
   if algorithm_name == "deep-q-learning":
-    return "Deep Q-learning"
+    algorithm_name = "Deep Q-learning"
   else:
-    return None
+    algorithm_name = None
+
+  return algorithm_name
 
 
 def compute_cumulative_moving_average(values):
   cumulative_sum = np.cumsum(values)
   cumulative_length = np.arange(1, values.size + 1)
   cumulative_moving_average = np.divide(cumulative_sum, cumulative_length)
+
   return cumulative_moving_average
 
 
@@ -101,6 +97,7 @@ def save_network_state_dictionary(network_state_dictionary, directory_path, base
 def load_network_state_dictionary(file_path):
   print("Loading network's state dictionary | File path: {}".format(file_path))
   network_state_dictionary = torch.load(file_path)
+
   return network_state_dictionary
 
 
@@ -122,6 +119,7 @@ def parse_input_arguments(algorithm_name_choices=("deep-q-learning",), environme
 
   input_arguments = parser.parse_args()
   handle_input_argument_errors(input_arguments)
+
   return input_arguments
 
 

@@ -32,12 +32,9 @@ agent = agents.Agent(observation_space_size, action_space_size)
 if input_arguments.simulation_function == "training_episodes":
   utility.control_randomness(input_arguments.seed)
 
-  training_results = simulations.simulate_training_episodes(agent, environment, input_arguments.episodes,
-                                                            input_arguments.visual_evaluation_frequency,
-                                                            input_arguments.verbose)
-  total_reward_per_episode = utility.compute_cumulative_moving_average(training_results[0])
-  total_time_steps_per_episode = utility.compute_cumulative_moving_average(training_results[1])
+  total_reward = simulations.simulate_training_episodes(agent, environment, input_arguments.episodes,
+                                                        input_arguments.visual_evaluation_frequency,
+                                                        input_arguments.verbose)
+  total_reward_per_episode = utility.compute_cumulative_moving_average(total_reward)
 
-  utility.save_training_plots(input_arguments.output_path, total_reward_per_episode, total_time_steps_per_episode,
-                              input_arguments.algorithm_name)
-  agent.save_network_state_dictionary(input_arguments.output_path)
+  utility.save_training_plot(input_arguments.output_path, total_reward_per_episode, input_arguments.algorithm_name)

@@ -55,8 +55,7 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
   print("Simulating {} training episode(s)".format(episodes))
   utility.print_line()
 
-  episode_total_rewards = np.zeros(episodes)
-  episode_total_time_steps = np.zeros(episodes)
+  total_rewards = np.zeros(episodes)
   for i in range(episodes):
     total_reward = 0
     total_time_steps = 0
@@ -71,8 +70,7 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
       total_time_steps += 1
       observation = next_observation
 
-    episode_total_rewards[i] = total_reward
-    episode_total_time_steps[i] = total_time_steps
+    total_rewards[i] = total_reward
 
     if verbose:
       print("Episode: {:>5}".format(i + 1), sep=" ", end="", flush=True)
@@ -84,4 +82,4 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
       print("Visually evaluating agent after episode {}".format(i + 1))
       simulate_visual_test_episode(agent, environment)
 
-  return episode_total_rewards, episode_total_time_steps
+  return total_rewards
