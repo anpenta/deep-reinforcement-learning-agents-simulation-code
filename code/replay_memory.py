@@ -30,8 +30,8 @@ class ReplayMemory:
     self._reward_memory = np.zeros(memory_capacity, dtype=np.float32)
     self._next_observation_memory = np.zeros((memory_capacity, observation_space_size), dtype=np.float32)
     self._done_memory = np.zeros(memory_capacity, dtype=np.bool)
-    self._memory_counter = 0
     self._memory_index = 0
+    self._memory_counter = 0
 
   def __len__(self):
     return min(self._memory_counter, self._memory_capacity)

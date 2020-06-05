@@ -92,6 +92,18 @@ def control_randomness(seed):
     torch.backends.cudnn.deterministic = True
 
 
+def save_network_state_dictionary(network_state_dictionary, directory_path, basename):
+  pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
+  print("Saving network's state dictionary | Directory path: {}".format(directory_path))
+  torch.save(network_state_dictionary, "{}/{}.pt".format(directory_path, basename))
+
+
+def load_network_state_dictionary(file_path):
+  print("Loading network's state dictionary | File path: {}".format(file_path))
+  network_state_dictionary = torch.load(file_path)
+  return network_state_dictionary
+
+
 def handle_input_argument_errors(input_arguments):
   if input_arguments.episodes < input_arguments.visual_evaluation_frequency:
     raise ValueError("value of visual_evaluation_frequency is greater than value of episodes")

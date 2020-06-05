@@ -52,7 +52,7 @@ class Agent:
     self._update_target_network()
     self._optimizer = optim.Adam(self._network.parameters(), lr=self._learning_rate)
     self._epsilon = self._max_epsilon
-    self._step = 0
+    self._step_counter = 0
 
   def _update_target_network(self):
     self._target_network.load_state_dict(self._network.state_dict())
@@ -91,7 +91,7 @@ class Agent:
     return action
 
   def step(self, observation, action, reward, next_observation, done):
-    self._step += 1
+    self._step_counter += 1
 
     self._replay_memory.store_experience(observation, action, reward, next_observation, done)
 
@@ -101,18 +101,8 @@ class Agent:
       loss_arguments = self._compute_loss_arguments(*experiences)
       self._optimize_network(*loss_arguments)
 
-    if self._step % self._target_network_update_frequency == 0:
+    if self._step_counter % self._target_network_update_frequency == 0:
       self._update_target_network()
 
     if self._epsilon > self._min_epsilon:
       self._epsilon -= self._epsilon_decay
-
-  def save_network_state_dictionary(self, directory_path):
-    pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
-    print("Saving network's state dictionary | Directory path: {}".format(directory_path))
-    torch.save(self._network.state_dict(), "{}/{}.pt".format(directory_path, self._network.name))
-
-  def load_network_state_dictionary(self, file_path):
-    print("Loading network's state dictionary | File path: {}".format(file_path))
-    network_state_dictionary = torch.load(file_path)
-    self._network.load_state_dict(network_state_dictionary)
