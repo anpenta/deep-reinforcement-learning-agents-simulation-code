@@ -32,9 +32,6 @@ class ReplayMemory:
     self._done_memory = np.zeros(memory_capacity, dtype=np.bool)
     self._memory_counter = 0
 
-  def __len__(self):
-    return min(self._memory_counter, self._memory_capacity)
-
   def store_experience(self, observation, action, reward, next_observation, done):
     memory_index = self._memory_counter % self._memory_capacity
 
@@ -57,3 +54,6 @@ class ReplayMemory:
     done_batch = self._done_memory[batch_indices]
 
     return observation_batch, action_batch, reward_batch, next_observation_batch, done_batch
+
+  def __len__(self):
+    return min(self._memory_counter, self._memory_capacity)

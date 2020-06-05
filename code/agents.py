@@ -18,8 +18,6 @@
 # Email: anpenta01@gmail.com
 # Models of deep reinforcement learning agents.
 
-import pathlib
-
 import numpy as np
 import torch
 import torch.nn.functional as F
