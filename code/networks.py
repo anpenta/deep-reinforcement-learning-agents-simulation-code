@@ -32,4 +32,5 @@ class DQN(nn.Module):
   def forward(self, x):
     x = F.relu(self._hidden(x))
     x = F.relu(self._output(x))
+
     return x

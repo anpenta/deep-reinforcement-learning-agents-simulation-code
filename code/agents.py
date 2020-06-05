@@ -85,8 +85,10 @@ class Agent:
       action = np.random.randint(self._action_space_size)
     else:
       observation = torch.from_numpy(observation).float().to(self._device)
+      self._network.eval()
       with torch.no_grad():
         action = self._network(observation).argmax().item()
+      self._network.train()
 
     return action
 

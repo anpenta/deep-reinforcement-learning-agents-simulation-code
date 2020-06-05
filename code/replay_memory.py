@@ -30,20 +30,19 @@ class ReplayMemory:
     self._reward_memory = np.zeros(memory_capacity, dtype=np.float32)
     self._next_observation_memory = np.zeros((memory_capacity, observation_space_size), dtype=np.float32)
     self._done_memory = np.zeros(memory_capacity, dtype=np.bool)
-    self._memory_index = 0
     self._memory_counter = 0
 
   def __len__(self):
     return min(self._memory_counter, self._memory_capacity)
 
   def store_experience(self, observation, action, reward, next_observation, done):
-    self._memory_index = self._memory_counter % self._memory_capacity
+    memory_index = self._memory_counter % self._memory_capacity
 
-    self._observation_memory[self._memory_index] = observation
-    self._action_memory[self._memory_index] = action
-    self._reward_memory[self._memory_index] = reward
-    self._next_observation_memory[self._memory_index] = next_observation
-    self._done_memory[self._memory_index] = done
+    self._observation_memory[memory_index] = observation
+    self._action_memory[memory_index] = action
+    self._reward_memory[memory_index] = reward
+    self._next_observation_memory[memory_index] = next_observation
+    self._done_memory[memory_index] = done
 
     self._memory_counter += 1
 
