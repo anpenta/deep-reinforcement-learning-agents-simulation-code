@@ -30,7 +30,7 @@ action_space_size = environment.action_space.n
 agent = agents.Agent(observation_space_size, action_space_size)
 
 if input_arguments.simulation_function == "training_episodes":
-  utility.control_randomness(input_arguments.seed)
+  utility.control_randomness(input_arguments.seed, environment)
 
   total_reward = simulations.simulate_training_episodes(agent, environment, input_arguments.episodes,
                                                         input_arguments.visual_evaluation_frequency,

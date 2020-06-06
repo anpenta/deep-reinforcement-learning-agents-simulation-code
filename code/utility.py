@@ -75,17 +75,16 @@ def compute_cumulative_moving_average(values):
   return cumulative_moving_average
 
 
-# TODO: Debug control_randomness.
-def control_randomness(seed):
+def control_randomness(seed, environment):
   os.environ["PYTHONHASHSEED"] = str(seed)
   random.seed(seed)
   np.random.seed(seed)
+  environment.seed(seed)
   torch.manual_seed(seed)
-  if torch.cuda.is_available():
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
+  torch.cuda.manual_seed(seed)
+  torch.cuda.manual_seed_all(seed)
+  torch.backends.cudnn.benchmark = False
+  torch.backends.cudnn.deterministic = True
 
 
 def save_network_state_dictionary(network_state_dictionary, directory_path, basename):
@@ -134,7 +133,7 @@ def add_training_episodes_parser(subparsers, algorithm_name_choices, environment
   training_episodes_parser.add_argument("episodes", type=int, choices=episode_choices,
                                         help="number of training episodes to simulate")
   training_episodes_parser.add_argument("seed", type=int, choices=seed_choices,
-                                        help="seed value to control the randomness")
+                                        help="seed value to control the randomness and get reproducible results")
   training_episodes_parser.add_argument("visual_evaluation_frequency", type=int,
                                         help="episode frequency for visually evaluating agent; should be within range"
                                              " of training episodes and not negative; 0 suppresses visualization")

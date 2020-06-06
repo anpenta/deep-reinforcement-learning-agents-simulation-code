@@ -16,7 +16,7 @@
 # Simulations Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Helper functions to run deep reinforcement learning simulations.
+# Reinforcement learning simulation functions.
 # In every simulation function we start counting time steps from 0.
 
 import time
