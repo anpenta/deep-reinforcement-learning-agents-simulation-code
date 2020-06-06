@@ -24,10 +24,11 @@ import torch.nn.functional as F
 
 class DQN(nn.Module):
 
-  def __init__(self, observation_space_size, action_space_size):
+  def __init__(self, observation_space_size, action_space_size, device):
     super().__init__()
     self._hidden = nn.Linear(observation_space_size, 128)
     self._output = nn.Linear(128, action_space_size)
+    self.to(device)
 
   def forward(self, x):
     x = F.relu(self._hidden(x))
