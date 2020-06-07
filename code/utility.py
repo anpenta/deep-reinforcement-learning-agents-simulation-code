@@ -46,16 +46,30 @@ def create_environment(environment_name):
   return environment
 
 
-def save_training_plot(directory_path, total_reward_per_episode, algorithm_name):
-  pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
-  print("Saving training plot | Directory path: {}".format(directory_path))
+def control_randomness(seed, environment):
+  os.environ["PYTHONHASHSEED"] = str(seed)
+  random.seed(seed)
+  np.random.seed(seed)
+  environment.seed(seed)
+  torch.manual_seed(seed)
+  torch.cuda.manual_seed(seed)
+  torch.cuda.manual_seed_all(seed)
+  torch.backends.cudnn.benchmark = False
+  torch.backends.cudnn.deterministic = True
 
-  plt.plot(total_reward_per_episode)
-  plt.title(format_algorithm_name_for_plot(algorithm_name))
-  plt.ylabel("Total reward per episode")
-  plt.xlabel("Number of episodes")
-  plt.savefig("{}/{}-total-reward-per-episode".format(directory_path, algorithm_name))
-  plt.close()
+
+def compute_cumulative_moving_average(value_array):
+  cumulative_sum = np.cumsum(value_array, axis=None)
+  cumulative_length = np.arange(1, value_array.size + 1)
+  cumulative_moving_average = np.divide(cumulative_sum, cumulative_length)
+
+  return cumulative_moving_average
+
+
+def compute_summary_statistics(value_array, axis):
+  mean_values = np.mean(value_array, axis=axis)
+  standard_deviation_values = np.std(value_array, axis=axis)
+  return mean_values, standard_deviation_values
 
 
 def format_algorithm_name_for_plot(algorithm_name):
@@ -67,24 +81,20 @@ def format_algorithm_name_for_plot(algorithm_name):
   return algorithm_name
 
 
-def compute_cumulative_moving_average(values):
-  cumulative_sum = np.cumsum(values)
-  cumulative_length = np.arange(1, values.size + 1)
-  cumulative_moving_average = np.divide(cumulative_sum, cumulative_length)
+def save_training_experiment_plot(directory_path, mean_experiment_total_rewards,
+                                  standard_deviation_experiment_total_rewards, algorithm_name):
+  pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
+  print("Saving training plot | Directory path: {}".format(directory_path))
 
-  return cumulative_moving_average
-
-
-def control_randomness(seed, environment):
-  os.environ["PYTHONHASHSEED"] = str(seed)
-  random.seed(seed)
-  np.random.seed(seed)
-  environment.seed(seed)
-  torch.manual_seed(seed)
-  torch.cuda.manual_seed(seed)
-  torch.cuda.manual_seed_all(seed)
-  torch.backends.cudnn.benchmark = False
-  torch.backends.cudnn.deterministic = True
+  plt.plot(mean_experiment_total_rewards)
+  plt.fill_between(range(mean_experiment_total_rewards.size),
+                   mean_experiment_total_rewards - standard_deviation_experiment_total_rewards,
+                   mean_experiment_total_rewards + standard_deviation_experiment_total_rewards, alpha=0.5)
+  plt.title(format_algorithm_name_for_plot(algorithm_name))
+  plt.ylabel("Total reward")
+  plt.xlabel("Episode")
+  plt.savefig("{}/{}-total-reward".format(directory_path, algorithm_name))
+  plt.close()
 
 
 def save_network_state_dictionary(network_state_dictionary, directory_path, basename):
@@ -101,20 +111,24 @@ def load_network_state_dictionary(file_path):
 
 
 def handle_input_argument_errors(input_arguments):
-  if input_arguments.episodes < input_arguments.visual_evaluation_frequency:
-    raise ValueError("value of visual_evaluation_frequency is greater than value of episodes")
-  elif input_arguments.visual_evaluation_frequency < 0:
-    raise ValueError("value of visual_evaluation_frequency is negative")
+  if input_arguments.simulation_function == "training_episodes":
+    if input_arguments.episodes < input_arguments.visual_evaluation_frequency:
+      raise ValueError("value of visual_evaluation_frequency is greater than value of episodes")
+    elif input_arguments.visual_evaluation_frequency < 0:
+      raise ValueError("value of visual_evaluation_frequency is negative")
 
 
 def parse_input_arguments(algorithm_name_choices=("deep-q-learning",), environment_name_choices=("cart-pole",),
-                          episode_choices=range(1000, 5001, 500), seed_choices=range(1, 31, 1)):
+                          experiment_choices=range(1, 11, 1), episode_choices=range(1000, 5001, 500),
+                          seed_choices=range(1, 31, 1)):
   parser = argparse.ArgumentParser(prog="simulate", usage="runs deep reinforcement learning simulations")
   subparsers = parser.add_subparsers(dest="simulation_function", help="simulation function to run")
   subparsers.required = True
 
   add_training_episodes_parser(subparsers, algorithm_name_choices, environment_name_choices, episode_choices,
                                seed_choices)
+  add_training_experiments_parser(subparsers, algorithm_name_choices, environment_name_choices, experiment_choices,
+                                  episode_choices)
 
   input_arguments = parser.parse_args()
   handle_input_argument_errors(input_arguments)
@@ -137,7 +151,21 @@ def add_training_episodes_parser(subparsers, algorithm_name_choices, environment
   training_episodes_parser.add_argument("visual_evaluation_frequency", type=int,
                                         help="episode frequency for visually evaluating agent; should be within range"
                                              " of training episodes and not negative; 0 suppresses visualization")
+
+
+def add_training_experiments_parser(subparsers, algorithm_name_choices, environment_name_choices, experiment_choices,
+                                    episode_choices):
+  training_episodes_parser = subparsers.add_parser("training_experiments")
+
+  training_episodes_parser.add_argument("algorithm_name", choices=algorithm_name_choices,
+                                        help="name of algorithm to be used")
+  training_episodes_parser.add_argument("environment_name", choices=environment_name_choices,
+                                        help="name of environment to be used")
+  training_episodes_parser.add_argument("experiments", type=int, choices=experiment_choices,
+                                        help="number of training experiments to simulate; each experiment will be"
+                                             " simulated using a different random seed; random seed values start from"
+                                             " 0 and increase by 1 before a next experiment is simulated")
+  training_episodes_parser.add_argument("episodes", type=int, choices=episode_choices,
+                                        help="number of training episodes to simulate in each training experiment")
   training_episodes_parser.add_argument("output_path", help="path to directory in which to save output in; directory"
                                                             " will be created if it does not exist")
-  training_episodes_parser.add_argument("-v", "--verbose", action="store_true",
-                                        help="enables training information trace")
