@@ -59,15 +59,12 @@ class Agent:
 
     return observation_batch, action_batch, reward_batch, next_observation_batch, done_batch
 
-  def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
+  def _optimize_online_network(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
     state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1))
     next_state_values = self._target_network(next_observation_batch).max(1)[0]
     next_state_values[done_batch] = 0
     update_targets = (reward_batch + self._gamma * next_state_values).unsqueeze(1)
 
-    return state_action_values, update_targets
-
-  def _optimize_online_network(self, state_action_values, update_targets):
     loss = F.mse_loss(state_action_values, update_targets)
     self._optimizer.zero_grad()
     loss.backward()
@@ -93,8 +90,7 @@ class Agent:
     if len(self._replay_memory) >= self._batch_size:
       experiences = self._replay_memory.sample_experiences(self._batch_size)
       experiences = self._preprocess_experiences(*experiences)
-      loss_arguments = self._compute_loss_arguments(*experiences)
-      self._optimize_online_network(*loss_arguments)
+      self._optimize_online_network(*experiences)
 
     if self._step_counter % self._target_network_update_frequency == 0:
       self._update_target_network()
