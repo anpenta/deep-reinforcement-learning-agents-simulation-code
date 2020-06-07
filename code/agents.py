@@ -24,7 +24,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import epsilon_decay_process
-import networks
+import neural_networks
 import replay_memory
 
 
@@ -40,8 +40,8 @@ class Agent:
     self._batch_size = batch_size
     self._target_network_update_frequency = target_network_update_frequency
     self._device = device
-    self._online_network = networks.DQN(observation_space_size, action_space_size, device)
-    self._target_network = networks.DQN(observation_space_size, action_space_size, device)
+    self._online_network = neural_networks.DQN(observation_space_size, action_space_size, device)
+    self._target_network = neural_networks.DQN(observation_space_size, action_space_size, device)
     self._target_network.eval()
     self._update_target_network()
     self._optimizer = optim.Adam(self._online_network.parameters(), lr=learning_rate)
