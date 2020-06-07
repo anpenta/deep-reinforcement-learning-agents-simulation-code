@@ -21,8 +21,9 @@
 
 import time
 
-import utility
 import numpy as np
+
+import utility
 
 
 def simulate_visual_test_episode(agent, environment):
@@ -55,7 +56,7 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
   print("Simulating {} training episode(s)".format(episodes))
   utility.print_line()
 
-  total_rewards = np.zeros(episodes)
+  episode_total_rewards = np.zeros(episodes)
   for i in range(episodes):
     total_reward = 0
     total_time_steps = 0
@@ -70,7 +71,7 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
       total_time_steps += 1
       observation = next_observation
 
-    total_rewards[i] = total_reward
+    episode_total_rewards[i] = total_reward
 
     if verbose:
       print("Episode: {:>5}".format(i + 1), sep=" ", end="", flush=True)
@@ -82,4 +83,18 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
       print("Visually evaluating agent after episode {}".format(i + 1))
       simulate_visual_test_episode(agent, environment)
 
-  return total_rewards
+  return episode_total_rewards
+
+
+def simulate_training_experiments(agent, environment, experiments, episodes):
+  utility.print_line()
+  print("Simulating {} training experiment(s) of {} episode(s) each".format(experiments, episodes))
+  utility.print_line()
+
+  experiment_total_rewards = np.zeros((experiments, episodes))
+  for i in range(experiments):
+    print("Simulating experiment: {:>5}/{}".format(i + 1, experiments))
+    utility.control_randomness(i, environment)
+    experiment_total_rewards[i] = simulate_training_episodes(agent, environment, episodes)
+
+  return experiment_total_rewards
