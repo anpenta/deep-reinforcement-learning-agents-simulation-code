@@ -23,8 +23,8 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-import experience_preprocessor
 import epsilon_decay_process
+import experience_preprocessor
 import neural_networks
 import replay_memory
 
@@ -35,11 +35,11 @@ class Agent:
                replay_memory_capacity, learning_rate, batch_size, target_network_update_frequency, device):
     self._action_space_size = action_space_size
     self._gamma = gamma
+    self._batch_size = batch_size
+    self._target_network_update_frequency = target_network_update_frequency
     self._epsilon_decay_process = epsilon_decay_process.EpsilonDecayProcess(max_epsilon, min_epsilon,
                                                                             epsilon_decay_steps)
     self._replay_memory = replay_memory.ReplayMemory(replay_memory_capacity, observation_space_size)
-    self._batch_size = batch_size
-    self._target_network_update_frequency = target_network_update_frequency
     self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(device)
     self._online_network = neural_networks.DQN(observation_space_size, action_space_size, device)
     self._target_network = neural_networks.DQN(observation_space_size, action_space_size, device)

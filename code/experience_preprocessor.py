@@ -26,7 +26,8 @@ class ExperiencePreprocessor:
   def __init__(self, device):
     self._device = device
 
-  def preprocess_experience_minibatch(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
+  def preprocess_experience_minibatch(self, observation_batch, action_batch, reward_batch, next_observation_batch,
+                                      done_batch):
     preprocessed_observation_batch = torch.from_numpy(observation_batch).to(self._device)
     preprocessed_action_batch = torch.from_numpy(action_batch).to(self._device)
     preprocessed_reward_batch = torch.from_numpy(reward_batch).to(self._device)
