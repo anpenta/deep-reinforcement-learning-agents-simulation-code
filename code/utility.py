@@ -149,8 +149,8 @@ def add_training_episodes_parser(subparsers, algorithm_name_choices, environment
   training_episodes_parser.add_argument("seed", type=int, choices=seed_choices,
                                         help="seed value to control the randomness and get reproducible results")
   training_episodes_parser.add_argument("visual_evaluation_frequency", type=int,
-                                        help="episode frequency for visually evaluating agent; should be within range"
-                                             " of training episodes and not negative; 0 suppresses visualization")
+                                        help="episode frequency for visually evaluating agent; should not be greater"
+                                             " than value of episodes or negative; 0 suppresses visualization")
 
 
 def add_training_experiments_parser(subparsers, algorithm_name_choices, environment_name_choices, experiment_choices,
