@@ -43,7 +43,7 @@ class ReplayMemory:
 
     self._memory_counter += 1
 
-  def sample_experiences(self, batch_size):
+  def sample_experience_minibatch(self, batch_size):
     memory_indices = min(self._memory_counter, self._memory_capacity)
     batch_indices = np.random.choice(memory_indices, batch_size, replace=False)
 

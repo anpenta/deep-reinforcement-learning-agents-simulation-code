@@ -23,6 +23,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+import experience_preprocessor
 import epsilon_decay_process
 import neural_networks
 import replay_memory
@@ -39,7 +40,7 @@ class Agent:
     self._replay_memory = replay_memory.ReplayMemory(replay_memory_capacity, observation_space_size)
     self._batch_size = batch_size
     self._target_network_update_frequency = target_network_update_frequency
-    self._device = device
+    self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(device)
     self._online_network = neural_networks.DQN(observation_space_size, action_space_size, device)
     self._target_network = neural_networks.DQN(observation_space_size, action_space_size, device)
     self._target_network.eval()
@@ -49,15 +50,6 @@ class Agent:
 
   def _update_target_network(self):
     self._target_network.load_state_dict(self._online_network.state_dict())
-
-  def _preprocess_experiences(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
-    observation_batch = torch.from_numpy(observation_batch).to(self._device)
-    action_batch = torch.from_numpy(action_batch).to(self._device)
-    reward_batch = torch.from_numpy(reward_batch).to(self._device)
-    next_observation_batch = torch.from_numpy(next_observation_batch).to(self._device)
-    done_batch = torch.from_numpy(done_batch).to(self._device)
-
-    return observation_batch, action_batch, reward_batch, next_observation_batch, done_batch
 
   def _optimize_online_network(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
     state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1))
@@ -74,10 +66,10 @@ class Agent:
     if np.random.rand() <= self._epsilon_decay_process.epsilon:
       action = np.random.randint(self._action_space_size)
     else:
-      observation = torch.from_numpy(observation).float().to(self._device)
+      preprocessed_observation = self._experience_preprocessor.preprocess_observation(observation)
       self._online_network.eval()
       with torch.no_grad():
-        action = self._online_network(observation).argmax().item()
+        action = self._online_network(preprocessed_observation).argmax().item()
       self._online_network.train()
 
     return action
@@ -88,8 +80,8 @@ class Agent:
     self._replay_memory.store_experience(observation, action, reward, next_observation, done)
 
     if len(self._replay_memory) >= self._batch_size:
-      experiences = self._replay_memory.sample_experiences(self._batch_size)
-      preprocessed_experiences = self._preprocess_experiences(*experiences)
+      experiences = self._replay_memory.sample_experience_minibatch(self._batch_size)
+      preprocessed_experiences = self._experience_preprocessor.preprocess_experience_minibatch(*experiences)
       self._optimize_online_network(*preprocessed_experiences)
 
     if self._step_counter % self._target_network_update_frequency == 0:
