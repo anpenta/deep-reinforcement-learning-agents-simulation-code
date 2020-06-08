@@ -74,11 +74,11 @@ def compute_summary_statistics(value_array, axis):
 
 def format_algorithm_name_for_plot(algorithm_name):
   if algorithm_name == "deep-q-learning":
-    algorithm_name = "Deep Q-learning"
+    formatted_algorithm_name = "Deep Q-learning"
   else:
-    algorithm_name = None
+    formatted_algorithm_name = None
 
-  return algorithm_name
+  return formatted_algorithm_name
 
 
 def save_training_experiment_plot(directory_path, mean_experiment_total_rewards,

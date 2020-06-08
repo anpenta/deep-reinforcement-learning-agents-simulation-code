@@ -89,8 +89,8 @@ class Agent:
 
     if len(self._replay_memory) >= self._batch_size:
       experiences = self._replay_memory.sample_experiences(self._batch_size)
-      experiences = self._preprocess_experiences(*experiences)
-      self._optimize_online_network(*experiences)
+      preprocessed_experiences = self._preprocess_experiences(*experiences)
+      self._optimize_online_network(*preprocessed_experiences)
 
     if self._step_counter % self._target_network_update_frequency == 0:
       self._update_target_network()
