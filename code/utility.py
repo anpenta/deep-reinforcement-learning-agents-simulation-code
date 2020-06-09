@@ -67,8 +67,8 @@ def compute_cumulative_moving_average(value_array):
 
 
 def compute_summary_statistics(value_array, axis):
-  mean_values = np.mean(value_array, axis=axis)
-  standard_deviation_values = np.std(value_array, axis=axis)
+  mean_values = np.mean(value_array, axis)
+  standard_deviation_values = np.std(value_array, axis)
   return mean_values, standard_deviation_values
 
 

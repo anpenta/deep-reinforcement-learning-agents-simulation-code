@@ -27,7 +27,7 @@ import utility
 gamma = 0.99
 max_epsilon = 1
 min_epsilon = 0.01
-epsilon_decay_steps = 200000
+epsilon_decay_steps = 150000
 replay_memory_capacity = 100000
 learning_rate = 0.001
 batch_size = 32
@@ -45,11 +45,11 @@ agent = agents.Agent(observation_space_size, action_space_size, gamma, max_epsil
 if input_arguments.simulation_function == "training_episodes":
   utility.control_randomness(input_arguments.seed, environment)
   simulations.simulate_training_episodes(agent, environment, input_arguments.episodes,
-                                         input_arguments.visual_evaluation_frequency)
+                                         input_arguments.visual_evaluation_frequency, verbose=True)
 
 elif input_arguments.simulation_function == "training_experiments":
   experiment_total_rewards = simulations.simulate_training_experiments(agent, environment, input_arguments.experiments,
                                                                        input_arguments.episodes)
-  experiment_summary_statistics = utility.compute_summary_statistics(experiment_total_rewards, 0)
+  experiment_summary_statistics = utility.compute_summary_statistics(experiment_total_rewards, axis=0)
   utility.save_training_experiment_plot(input_arguments.output_path, *experiment_summary_statistics,
                                         input_arguments.algorithm_name)
