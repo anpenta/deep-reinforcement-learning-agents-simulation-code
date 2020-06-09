@@ -29,6 +29,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
+import agents
+
 matplotlib.use("Agg")
 plt.rcParams.update({"font.size": 12})
 
@@ -39,11 +41,20 @@ def print_line():
 
 def create_environment(environment_name):
   if environment_name == "cart-pole":
-    environment = gym.make("CartPole-v0")
+    return gym.make("CartPole-v0")
   else:
-    environment = None
+    return None
 
-  return environment
+
+def create_agent(algorithm_name, observation_space_size, action_space_size, gamma, max_epsilon, min_epsilon,
+                 epsilon_decay_steps, replay_memory_capacity, learning_rate, batch_size,
+                 target_network_update_frequency, device):
+  if algorithm_name == "deep-q-learning":
+    return agents.DeepQLearningAgent(observation_space_size, action_space_size, gamma, max_epsilon, min_epsilon,
+                                     epsilon_decay_steps, replay_memory_capacity, learning_rate, batch_size,
+                                     target_network_update_frequency, device)
+  else:
+    return None
 
 
 def control_randomness(seed, environment):
@@ -74,11 +85,9 @@ def compute_summary_statistics(value_array, axis):
 
 def format_algorithm_name_for_plot(algorithm_name):
   if algorithm_name == "deep-q-learning":
-    formatted_algorithm_name = "Deep Q-learning"
+    return "Deep Q-learning"
   else:
-    formatted_algorithm_name = None
-
-  return formatted_algorithm_name
+    return None
 
 
 def save_training_experiment_plot(directory_path, mean_experiment_total_rewards,
@@ -105,9 +114,7 @@ def save_network_state_dictionary(network_state_dictionary, directory_path, base
 
 def load_network_state_dictionary(file_path):
   print("Loading network's state dictionary | File path: {}".format(file_path))
-  network_state_dictionary = torch.load(file_path)
-
-  return network_state_dictionary
+  return torch.load(file_path)
 
 
 def handle_input_argument_errors(input_arguments):
