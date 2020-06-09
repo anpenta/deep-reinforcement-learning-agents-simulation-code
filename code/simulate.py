@@ -18,29 +18,15 @@
 # Email: anpenta01@gmail.com
 # Module to run deep reinforcement learning simulations.
 
-import torch
-
 import simulations
 import utility
-
-gamma = 0.99
-max_epsilon = 1
-min_epsilon = 0.01
-epsilon_decay_steps = 100000
-replay_memory_capacity = 100000
-learning_rate = 0.001
-batch_size = 32
-target_network_update_frequency = 5000
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 input_arguments = utility.parse_input_arguments()
 
 environment = utility.create_environment(input_arguments.environment_name)
 observation_space_size = environment.observation_space.shape[0]
 action_space_size = environment.action_space.n
-agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size, gamma,
-                             max_epsilon, min_epsilon, epsilon_decay_steps, replay_memory_capacity, learning_rate,
-                             batch_size, target_network_update_frequency, device)
+agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size)
 
 if input_arguments.simulation_function == "training_episodes":
   utility.control_randomness(input_arguments.seed, environment)

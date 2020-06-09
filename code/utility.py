@@ -46,13 +46,9 @@ def create_environment(environment_name):
     return None
 
 
-def create_agent(algorithm_name, observation_space_size, action_space_size, gamma, max_epsilon, min_epsilon,
-                 epsilon_decay_steps, replay_memory_capacity, learning_rate, batch_size,
-                 target_network_update_frequency, device):
+def create_agent(algorithm_name, observation_space_size, action_space_size):
   if algorithm_name == "deep-q-learning":
-    return agents.DeepQLearningAgent(observation_space_size, action_space_size, gamma, max_epsilon, min_epsilon,
-                                     epsilon_decay_steps, replay_memory_capacity, learning_rate, batch_size,
-                                     target_network_update_frequency, device)
+    return agents.DeepQLearningAgent(observation_space_size, action_space_size)
   else:
     return None
 

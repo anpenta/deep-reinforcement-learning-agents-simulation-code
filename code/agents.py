@@ -27,23 +27,21 @@ import epsilon_decay_process
 import experience_preprocessor
 import neural_networks
 import replay_memory
+import hyperparameters
 
 
 class Agent:
 
-  def __init__(self, observation_space_size, action_space_size, gamma, max_epsilon, min_epsilon, epsilon_decay_steps,
-               replay_memory_capacity, learning_rate, batch_size, target_network_update_frequency, device):
+  def __init__(self, observation_space_size, action_space_size):
     self._observation_space_size = observation_space_size
     self._action_space_size = action_space_size
-    self._gamma = gamma
-    self._learning_rate = learning_rate
-    self._batch_size = batch_size
-    self._target_network_update_frequency = target_network_update_frequency
-    self._device = device
-    self._epsilon_decay_process = epsilon_decay_process.EpsilonDecayProcess(max_epsilon, min_epsilon,
-                                                                            epsilon_decay_steps)
-    self._replay_memory = replay_memory.ReplayMemory(replay_memory_capacity, observation_space_size)
-    self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(device)
+    self._hyperparameters = hyperparameters.Hyperparameters()
+    self._epsilon_decay_process = epsilon_decay_process.EpsilonDecayProcess(self._hyperparameters.max_epsilon,
+                                                                            self._hyperparameters.min_epsilon,
+                                                                            self._hyperparameters.epsilon_decay_steps)
+    self._replay_memory = replay_memory.ReplayMemory(self._hyperparameters.replay_memory_capacity,
+                                                     observation_space_size)
+    self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(self._hyperparameters.device)
     self._step_counter = 0
 
   def _update_target_network(self):
@@ -67,12 +65,12 @@ class Agent:
 
     self._replay_memory.store_experience(observation, action, reward, next_observation, done)
 
-    if len(self._replay_memory) >= self._batch_size:
-      experiences = self._replay_memory.sample_experience_minibatch(self._batch_size)
+    if len(self._replay_memory) >= self._hyperparameters.batch_size:
+      experiences = self._replay_memory.sample_experience_minibatch(self._hyperparameters.batch_size)
       preprocessed_experiences = self._experience_preprocessor.preprocess_experience_minibatch(*experiences)
       self._optimize_online_network(*preprocessed_experiences)
 
-    if self._step_counter % self._target_network_update_frequency == 0:
+    if self._step_counter % self._hyperparameters.target_network_update_frequency == 0:
       self._update_target_network()
 
     self._epsilon_decay_process.decay_epsilon()
@@ -82,11 +80,13 @@ class DeepQLearningAgent(Agent):
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size, self._device)
-    self._target_network = neural_networks.DQN(self._observation_space_size, self._action_space_size, self._device)
+    self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+                                               self._hyperparameters.device)
+    self._target_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+                                               self._hyperparameters.device)
     self._target_network.eval()
     self._update_target_network()
-    self._optimizer = optim.Adam(self._online_network.parameters(), lr=self._learning_rate)
+    self._optimizer = optim.Adam(self._online_network.parameters(), lr=self._hyperparameters.learning_rate)
 
   def _update_target_network(self):
     self._target_network.load_state_dict(self._online_network.state_dict())
@@ -95,7 +95,7 @@ class DeepQLearningAgent(Agent):
     state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1))
     next_state_values = self._target_network(next_observation_batch).max(1)[0]
     next_state_values[done_batch] = 0
-    update_targets = (reward_batch + self._gamma * next_state_values).unsqueeze(1)
+    update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values).unsqueeze(1)
 
     loss = F.mse_loss(state_action_values, update_targets)
     self._optimizer.zero_grad()
