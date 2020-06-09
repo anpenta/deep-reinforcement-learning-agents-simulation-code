@@ -16,7 +16,7 @@
 # Utility Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Utility functions to run deep reinforcement learning simulations.
+# Utility functions for deep reinforcement learning simulations.
 
 import argparse
 import os
@@ -76,6 +76,7 @@ def compute_cumulative_moving_average(value_array):
 def compute_summary_statistics(value_array, axis):
   mean_values = np.mean(value_array, axis)
   standard_deviation_values = np.std(value_array, axis)
+
   return mean_values, standard_deviation_values
 
 
@@ -89,7 +90,7 @@ def format_algorithm_name_for_plot(algorithm_name):
 def save_training_experiment_plot(directory_path, mean_experiment_total_rewards,
                                   standard_deviation_experiment_total_rewards, algorithm_name):
   pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
-  print("Saving training plot | Directory path: {}".format(directory_path))
+  print("Saving training experiment plot | Directory path: {}".format(directory_path))
 
   plt.plot(mean_experiment_total_rewards)
   plt.fill_between(range(mean_experiment_total_rewards.size),
@@ -104,12 +105,12 @@ def save_training_experiment_plot(directory_path, mean_experiment_total_rewards,
 
 def save_network_state_dictionary(network_state_dictionary, directory_path, basename):
   pathlib.Path(directory_path).mkdir(parents=True, exist_ok=True)
-  print("Saving network's state dictionary | Directory path: {}".format(directory_path))
+  print("Saving network state dictionary | Directory path: {}".format(directory_path))
   torch.save(network_state_dictionary, "{}/{}.pt".format(directory_path, basename))
 
 
 def load_network_state_dictionary(file_path):
-  print("Loading network's state dictionary | File path: {}".format(file_path))
+  print("Loading network state dictionary | File path: {}".format(file_path))
   return torch.load(file_path)
 
 

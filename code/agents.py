@@ -25,9 +25,9 @@ import torch.optim as optim
 
 import epsilon_decay_process
 import experience_preprocessor
+import hyperparameters
 import neural_networks
 import replay_memory
-import hyperparameters
 
 
 class Agent:
