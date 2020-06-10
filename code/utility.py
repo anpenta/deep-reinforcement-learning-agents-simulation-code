@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-import agents
+import deep_q_learning_agents
 
 matplotlib.use("Agg")
 plt.rcParams.update({"font.size": 12})
@@ -48,9 +48,9 @@ def create_environment(environment_name):
 
 def create_agent(algorithm_name, observation_space_size, action_space_size):
   if algorithm_name == "deep-q-learning":
-    return agents.DeepQLearningAgent(observation_space_size, action_space_size)
+    return deep_q_learning_agents.DeepQLearningAgent(observation_space_size, action_space_size)
   elif algorithm_name == "double-deep-q-learning":
-    return agents.DoubleDeepQLearningAgent(observation_space_size, action_space_size)
+    return deep_q_learning_agents.DoubleDeepQLearningAgent(observation_space_size, action_space_size)
   else:
     return None
 

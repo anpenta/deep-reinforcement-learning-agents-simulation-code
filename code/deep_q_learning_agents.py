@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-# Agents Module
+# Deep Q-learning Agents Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Models of deep reinforcement learning agents.
+# Models of deep reinforcement learning agents that use deep Q-learning variants.
 
 import numpy as np
 import torch
@@ -30,7 +30,7 @@ import neural_networks
 import replay_memory
 
 
-class Agent:
+class DeepQLearningAgent:
 
   def __init__(self, observation_space_size, action_space_size):
     self._observation_space_size = observation_space_size
@@ -42,16 +42,39 @@ class Agent:
     self._replay_memory = replay_memory.ReplayMemory(self._hyperparameters.replay_memory_capacity,
                                                      observation_space_size)
     self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(self._hyperparameters.device)
+    self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+                                               self._hyperparameters.device)
+    self._target_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+                                               self._hyperparameters.device)
+    self._target_network.eval()
+    self._update_target_network()
+    self._optimizer = optim.Adam(self._online_network.parameters(), lr=self._hyperparameters.learning_rate)
     self._step_counter = 0
 
   def _update_target_network(self):
-    raise NotImplementedError
-
-  def _optimize_online_network(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
-    raise NotImplementedError
+    self._target_network.load_state_dict(self._online_network.state_dict())
 
   def _compute_greedy_action(self, preprocessed_observation):
-    raise NotImplementedError
+    self._online_network.eval()
+    with torch.no_grad():
+      action = self._online_network(preprocessed_observation).argmax().item()
+    self._online_network.train()
+
+    return action
+
+  def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
+    state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
+    next_state_values = self._target_network(next_observation_batch).max(1)[0]
+    next_state_values[done_batch] = 0
+    update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values)
+
+    return state_action_values, update_targets
+
+  def _optimize_online_network(self, state_action_values, update_targets):
+    loss = F.mse_loss(state_action_values, update_targets)
+    self._optimizer.zero_grad()
+    loss.backward()
+    self._optimizer.step()
 
   def select_action(self, observation):
     if np.random.rand() <= self._epsilon_decay_process.epsilon:
@@ -68,7 +91,8 @@ class Agent:
     if len(self._replay_memory) >= self._hyperparameters.batch_size:
       experiences = self._replay_memory.sample_experience_minibatch(self._hyperparameters.batch_size)
       preprocessed_experiences = self._experience_preprocessor.preprocess_experience_minibatch(*experiences)
-      self._optimize_online_network(*preprocessed_experiences)
+      loss_arguments = self._compute_loss_arguments(*preprocessed_experiences)
+      self._optimize_online_network(*loss_arguments)
 
     if self._step_counter % self._hyperparameters.target_network_update_frequency == 0:
       self._update_target_network()
@@ -76,72 +100,16 @@ class Agent:
     self._epsilon_decay_process.decay_epsilon()
 
 
-class DeepQLearningAgent(Agent):
+class DoubleDeepQLearningAgent(DeepQLearningAgent):
 
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
-                                               self._hyperparameters.device)
-    self._target_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
-                                               self._hyperparameters.device)
-    self._target_network.eval()
-    self._update_target_network()
-    self._optimizer = optim.Adam(self._online_network.parameters(), lr=self._hyperparameters.learning_rate)
+  def __init__(self, observation_space_size, action_space_size):
+    super().__init__(observation_space_size, action_space_size)
 
-  def _update_target_network(self):
-    self._target_network.load_state_dict(self._online_network.state_dict())
-
-  def _optimize_online_network(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
-    state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
-    next_state_values = self._target_network(next_observation_batch).max(1)[0]
-    next_state_values[done_batch] = 0
-    update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values)
-
-    loss = F.mse_loss(state_action_values, update_targets)
-    self._optimizer.zero_grad()
-    loss.backward()
-    self._optimizer.step()
-
-  def _compute_greedy_action(self, preprocessed_observation):
-    self._online_network.eval()
-    with torch.no_grad():
-      action = self._online_network(preprocessed_observation).argmax().item()
-    self._online_network.train()
-
-    return action
-
-
-class DoubleDeepQLearningAgent(Agent):
-
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
-                                               self._hyperparameters.device)
-    self._target_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
-                                               self._hyperparameters.device)
-    self._target_network.eval()
-    self._update_target_network()
-    self._optimizer = optim.Adam(self._online_network.parameters(), lr=self._hyperparameters.learning_rate)
-
-  def _update_target_network(self):
-    self._target_network.load_state_dict(self._online_network.state_dict())
-
-  def _optimize_online_network(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
+  def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
     state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
     next_actions = self._online_network(next_observation_batch).argmax(1)
     next_state_values = self._target_network(next_observation_batch).gather(1, next_actions.unsqueeze(1)).squeeze(1)
     next_state_values[done_batch] = 0
     update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values)
 
-    loss = F.mse_loss(state_action_values, update_targets)
-    self._optimizer.zero_grad()
-    loss.backward()
-    self._optimizer.step()
-
-  def _compute_greedy_action(self, preprocessed_observation):
-    self._online_network.eval()
-    with torch.no_grad():
-      action = self._online_network(preprocessed_observation).argmax().item()
-    self._online_network.train()
-
-    return action
+    return state_action_values, update_targets
