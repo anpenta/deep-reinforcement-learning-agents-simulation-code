@@ -49,6 +49,8 @@ def create_environment(environment_name):
 def create_agent(algorithm_name, observation_space_size, action_space_size):
   if algorithm_name == "deep-q-learning":
     return agents.DeepQLearningAgent(observation_space_size, action_space_size)
+  elif algorithm_name == "double-deep-q-learning":
+    return agents.DoubleDeepQLearningAgent(observation_space_size, action_space_size)
   else:
     return None
 
@@ -83,6 +85,8 @@ def compute_summary_statistics(value_array, axis):
 def format_algorithm_name_for_plot(algorithm_name):
   if algorithm_name == "deep-q-learning":
     return "Deep Q-learning"
+  elif algorithm_name == "double-deep-q-learning":
+    return "Double Deep Q-learning"
   else:
     return None
 
@@ -122,7 +126,8 @@ def handle_input_argument_errors(input_arguments):
       raise ValueError("value of visual_evaluation_frequency is negative")
 
 
-def parse_input_arguments(algorithm_name_choices=("deep-q-learning",), environment_name_choices=("cart-pole",),
+def parse_input_arguments(algorithm_name_choices=("deep-q-learning", "double-deep-q-learning"),
+                          environment_name_choices=("cart-pole",),
                           experiment_choices=range(1, 11, 1), episode_choices=range(1000, 5001, 500),
                           seed_choices=range(1, 31, 1)):
   parser = argparse.ArgumentParser(prog="simulate", usage="runs deep reinforcement learning simulations")

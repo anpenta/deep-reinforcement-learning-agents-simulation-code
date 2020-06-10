@@ -92,10 +92,46 @@ class DeepQLearningAgent(Agent):
     self._target_network.load_state_dict(self._online_network.state_dict())
 
   def _optimize_online_network(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
-    state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1))
+    state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
     next_state_values = self._target_network(next_observation_batch).max(1)[0]
     next_state_values[done_batch] = 0
-    update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values).unsqueeze(1)
+    update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values)
+
+    loss = F.mse_loss(state_action_values, update_targets)
+    self._optimizer.zero_grad()
+    loss.backward()
+    self._optimizer.step()
+
+  def _compute_greedy_action(self, preprocessed_observation):
+    self._online_network.eval()
+    with torch.no_grad():
+      action = self._online_network(preprocessed_observation).argmax().item()
+    self._online_network.train()
+
+    return action
+
+
+class DoubleDeepQLearningAgent(Agent):
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+                                               self._hyperparameters.device)
+    self._target_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+                                               self._hyperparameters.device)
+    self._target_network.eval()
+    self._update_target_network()
+    self._optimizer = optim.Adam(self._online_network.parameters(), lr=self._hyperparameters.learning_rate)
+
+  def _update_target_network(self):
+    self._target_network.load_state_dict(self._online_network.state_dict())
+
+  def _optimize_online_network(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
+    state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
+    next_actions = self._online_network(next_observation_batch).argmax(1)
+    next_state_values = self._target_network(next_observation_batch).gather(1, next_actions.unsqueeze(1)).squeeze(1)
+    next_state_values[done_batch] = 0
+    update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values)
 
     loss = F.mse_loss(state_action_values, update_targets)
     self._optimizer.zero_grad()
