@@ -26,7 +26,9 @@ input_arguments = utility.parse_input_arguments()
 environment = utility.create_environment(input_arguments.environment_name)
 observation_space_size = environment.observation_space.shape[0]
 action_space_size = environment.action_space.n
-agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size)
+
+hyperparameters = utility.create_hyperparameters(input_arguments.environment_name)
+agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size, hyperparameters)
 
 if input_arguments.simulation_function == "training_episodes":
   utility.control_randomness(input_arguments.seed, environment)
