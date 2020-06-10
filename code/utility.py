@@ -31,7 +31,6 @@ import torch
 
 import deep_q_learning_agents
 
-matplotlib.use("Agg")
 plt.rcParams.update({"font.size": 12})
 
 
