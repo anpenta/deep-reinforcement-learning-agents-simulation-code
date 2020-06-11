@@ -25,16 +25,17 @@ import torch.optim as optim
 
 import epsilon_decay_process
 import experience_preprocessor
+import hyperparameters
 import neural_networks
 import replay_memory
 
 
 class DeepQLearningAgent:
 
-  def __init__(self, observation_space_size, action_space_size, hyperparameters):
+  def __init__(self, observation_space_size, action_space_size):
     self._observation_space_size = observation_space_size
     self._action_space_size = action_space_size
-    self._hyperparameters = hyperparameters
+    self._hyperparameters = hyperparameters.Hyperparameters()
     self._epsilon_decay_process = epsilon_decay_process.EpsilonDecayProcess(self._hyperparameters.max_epsilon,
                                                                             self._hyperparameters.min_epsilon,
                                                                             self._hyperparameters.epsilon_decay_steps)
@@ -101,8 +102,8 @@ class DeepQLearningAgent:
 
 class DoubleDeepQLearningAgent(DeepQLearningAgent):
 
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
+  def __init__(self, observation_space_size, action_space_size):
+    super().__init__(observation_space_size, action_space_size)
 
   def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
     state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)

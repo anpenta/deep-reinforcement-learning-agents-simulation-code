@@ -21,16 +21,16 @@
 import torch
 
 
-class CartPoleHyperparameters:
+class Hyperparameters:
 
   def __init__(self):
-    self._gamma = 0.95
-    self._max_epsilon = 0.5
-    self._min_epsilon = 0.001
-    self._epsilon_decay_steps = 10000
-    self._replay_memory_capacity = 100000
-    self._learning_rate = 0.0001
-    self._batch_size = 128
+    self._gamma = 0.99
+    self._max_epsilon = 1
+    self._min_epsilon = 0.01
+    self._epsilon_decay_steps = 50000
+    self._replay_memory_capacity = 50000
+    self._learning_rate = 0.001
+    self._batch_size = 32
     self._target_network_update_frequency = 1000
     self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

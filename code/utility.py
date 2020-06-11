@@ -24,10 +24,11 @@ import pathlib
 import random
 
 import gym
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import hyperparameters
+
 import deep_q_learning_agents
 
 plt.rcParams.update({"font.size": 12})
@@ -44,18 +45,11 @@ def create_environment(environment_name):
     return None
 
 
-def create_hyperparameters(environment_name):
-  if environment_name == "cart-pole":
-    return hyperparameters.CartPoleHyperparameters()
-  else:
-    return None
-
-
-def create_agent(algorithm_name, observation_space_size, action_space_size, hyperparameters):
+def create_agent(algorithm_name, observation_space_size, action_space_size):
   if algorithm_name == "deep-q-learning":
-    return deep_q_learning_agents.DeepQLearningAgent(observation_space_size, action_space_size, hyperparameters)
+    return deep_q_learning_agents.DeepQLearningAgent(observation_space_size, action_space_size)
   elif algorithm_name == "double-deep-q-learning":
-    return deep_q_learning_agents.DoubleDeepQLearningAgent(observation_space_size, action_space_size, hyperparameters)
+    return deep_q_learning_agents.DoubleDeepQLearningAgent(observation_space_size, action_space_size)
   else:
     return None
 
@@ -133,7 +127,7 @@ def handle_input_argument_errors(input_arguments):
 
 def parse_input_arguments(algorithm_name_choices=("deep-q-learning", "double-deep-q-learning"),
                           environment_name_choices=("cart-pole",),
-                          experiment_choices=range(1, 11, 1), episode_choices=range(500, 5001, 500),
+                          experiment_choices=range(1, 11, 1), episode_choices=range(1000, 5001, 500),
                           seed_choices=range(1, 31, 1)):
   parser = argparse.ArgumentParser(prog="simulate", usage="runs deep reinforcement learning simulations")
   subparsers = parser.add_subparsers(dest="simulation_function", help="simulation function to run")
