@@ -27,6 +27,7 @@ class EpsilonDecayProcess:
     self._epsilon = max_epsilon
 
   def decay_epsilon(self):
+    # Decay epsilon linearly.
     self._epsilon = max(self._epsilon - self._epsilon_decay, self._min_epsilon)
 
   @property

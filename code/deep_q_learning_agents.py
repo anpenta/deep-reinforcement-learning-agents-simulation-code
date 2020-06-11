@@ -78,6 +78,7 @@ class DeepQLearningAgent:
     self._optimizer.step()
 
   def select_action(self, observation):
+    # Use an epsilon-greedy policy for action selection based on the epsilon decay process.
     if np.random.rand() <= self._epsilon_decay_process.epsilon:
       return np.random.randint(self._action_space_size)
     else:
@@ -108,7 +109,8 @@ class DoubleDeepQLearningAgent(DeepQLearningAgent):
     super().__init__(observation_space_size, action_space_size)
 
   def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
-    # Determine the actions of the next state using the online network and evaluate them using the target network.
+    # Determine the maximizing actions for the next state using the online network and evaluate them using
+    # the target network.
     state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
     next_actions = self._online_network(next_observation_batch).argmax(1)
     next_state_values = self._target_network(next_observation_batch).gather(1, next_actions.unsqueeze(1)).squeeze(1)
@@ -144,7 +146,7 @@ class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
       loss_arguments = self._compute_loss_arguments(*preprocessed_experiences)
       self._optimize_online_network(*loss_arguments)
 
-      # Compute the batch priorities and update the priorities in the prioritized replay memory.
+      # Compute the batch priorities and use them to update the priorities in the prioritized replay memory.
       batch_priorities = self._compute_batch_priorities(*loss_arguments)
       self._replay_memory.update_priorities(batch_priorities)
 

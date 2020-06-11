@@ -93,7 +93,7 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
 # simulate_training_experiments: Simulates the given number of experiments where each experiment is run with
 # a different random seed. In each experiment, a new agent that uses the given algorithm name is created,
 # interacts with the given environment, and learns for the given number of episodes. Returns the total reward
-# gained from the agent in each episode of each experiment.
+# gained from each agent in each episode of each experiment.
 def simulate_training_experiments(algorithm_name, environment, experiments, episodes):
   utility.print_line()
   print("Simulating {} training experiment(s) of {} episode(s) each".format(experiments, episodes))

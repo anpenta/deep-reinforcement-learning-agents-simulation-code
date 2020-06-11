@@ -16,7 +16,7 @@
 # Hyperparameters Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Hyperparameters for a deep reinforcement learning agent.
+# Hyperparameters for deep reinforcement learning agents.
 
 import torch
 

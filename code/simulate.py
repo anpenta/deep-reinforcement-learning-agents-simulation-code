@@ -25,7 +25,7 @@ input_arguments = utility.parse_input_arguments()
 environment = utility.create_environment(input_arguments.environment_name)
 
 if input_arguments.simulation_function == "training_episodes":
-  # Create the agent, control the randomness, and run the training episodes.
+  # Compute the environment space sizes, create the agent, control the randomness, and run the training episodes.
   observation_space_size, action_space_size = utility.compute_environment_space_sizes(environment)
   agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size)
   utility.control_randomness(input_arguments.seed, environment)
@@ -33,7 +33,7 @@ if input_arguments.simulation_function == "training_episodes":
                                          input_arguments.visual_evaluation_frequency, verbose=True)
 
 elif input_arguments.simulation_function == "training_experiments":
-  # Run the training experiments, compute summary statistics of the results, and save the plot with the summary
+  # Run the training experiments, compute the summary statistics of the results, and save the plot with the summary
   # statistics in the given output path.
   experiment_total_rewards = simulations.simulate_training_experiments(input_arguments.algorithm_name, environment,
                                                                        input_arguments.experiments,

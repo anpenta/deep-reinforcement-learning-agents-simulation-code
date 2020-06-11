@@ -39,11 +39,12 @@ class ReplayMemory:
     self._memory_counter += 1
 
   def _sample_batch_indices(self, batch_size):
+    # Sample the batch indices uniformly.
     memory_size = min(self._memory_counter, self._memory_capacity)
     self._batch_indices = np.random.choice(memory_size, batch_size, replace=False)
 
   def store_experience(self, observation, action, reward, next_observation, done):
-    # Update the memory index and store the given experience.
+    # Update the memory index and store the given experience in memory.
     self._update_memory_index()
     self._observation_memory[self._memory_index] = observation
     self._action_memory[self._memory_index] = action
@@ -52,7 +53,7 @@ class ReplayMemory:
     self._done_memory[self._memory_index] = done
 
   def sample_experience_batch(self, batch_size):
-    # Sample batch indices and experience batch.
+    # Sample the batch indices and experience batch.
     self._sample_batch_indices(batch_size)
     observation_batch = self._observation_memory[self._batch_indices]
     action_batch = self._action_memory[self._batch_indices]
@@ -75,7 +76,7 @@ class PrioritizedReplayMemory(ReplayMemory):
     self._max_priority = 1
 
   def _sample_batch_indices(self, batch_size):
-    # Sample batch indices using proportional prioritization.
+    # Sample the batch indices using proportional prioritization.
     memory_size = min(self._memory_counter, self._memory_capacity)
     exponentiated_priorities = self._priorities[:memory_size] ** self._prioritized_replay_alpha
     probabilities = exponentiated_priorities / np.sum(exponentiated_priorities)
@@ -84,7 +85,7 @@ class PrioritizedReplayMemory(ReplayMemory):
   def store_experience(self, observation, action, reward, next_observation, done):
     super().store_experience(observation, action, reward, next_observation, done)
 
-    # Use the max priority for the given experience.
+    # Assign maximum priority to the given experience because it is new.
     self._priorities[self._memory_index] = self._max_priority
 
   def update_priorities(self, batch_priorities):

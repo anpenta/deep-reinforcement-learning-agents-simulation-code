@@ -16,7 +16,7 @@
 # Experience Preprocessor Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Experience preprocessor for a deep reinforcement learning agent.
+# Experience preprocessor for deep reinforcement learning agents.
 
 import torch
 
