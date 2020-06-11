@@ -49,6 +49,8 @@ def create_agent(algorithm_name, observation_space_size, action_space_size):
     return deep_q_learning_agents.DeepQLearningAgent(observation_space_size, action_space_size)
   elif algorithm_name == "double-deep-q-learning":
     return deep_q_learning_agents.DoubleDeepQLearningAgent(observation_space_size, action_space_size)
+  elif algorithm_name == "prioritized-deep-q-learning":
+    return deep_q_learning_agents.PrioritizedDeepQLearningAgent(observation_space_size, action_space_size)
   else:
     return None
 
@@ -85,6 +87,8 @@ def format_algorithm_name_for_plot(algorithm_name):
     return "Deep Q-learning"
   elif algorithm_name == "double-deep-q-learning":
     return "Double Deep Q-learning"
+  elif algorithm_name == "prioritized-deep-q-learning":
+    return "Prioritized Deep Q-learning"
   else:
     return None
 
@@ -124,7 +128,8 @@ def handle_input_argument_errors(input_arguments):
       raise ValueError("value of visual_evaluation_frequency is negative")
 
 
-def parse_input_arguments(algorithm_name_choices=("deep-q-learning", "double-deep-q-learning"),
+def parse_input_arguments(algorithm_name_choices=("deep-q-learning", "double-deep-q-learning",
+                                                  "prioritized-deep-q-learning"),
                           environment_name_choices=("cart-pole",),
                           experiment_choices=range(1, 11, 1), episode_choices=range(500, 5001, 500),
                           seed_choices=range(1, 31, 1)):

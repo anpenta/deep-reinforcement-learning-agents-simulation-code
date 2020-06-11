@@ -34,6 +34,9 @@ class Hyperparameters:
     self._target_network_update_frequency = 1000
     self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    self._priority_alpha = 0.6
+    self._priority_epsilon = 0.000001
+
   @property
   def gamma(self):
     return self._gamma
@@ -69,3 +72,11 @@ class Hyperparameters:
   @property
   def device(self):
     return self._device
+
+  @property
+  def priority_alpha(self):
+    return self._priority_alpha
+
+  @property
+  def priority_epsilon(self):
+    return self._priority_epsilon
