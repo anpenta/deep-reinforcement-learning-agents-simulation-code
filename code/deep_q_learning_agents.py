@@ -102,8 +102,8 @@ class DeepQLearningAgent:
 
 class DoubleDeepQLearningAgent(DeepQLearningAgent):
 
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
+  def __init__(self, observation_space_size, action_space_size):
+    super().__init__(observation_space_size, action_space_size)
 
   def _compute_loss_arguments(self, observation_batch, action_batch, reward_batch, next_observation_batch, done_batch):
     state_action_values = self._online_network(observation_batch).gather(1, action_batch.unsqueeze(1)).squeeze(1)
