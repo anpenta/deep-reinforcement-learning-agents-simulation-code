@@ -127,7 +127,7 @@ def handle_input_argument_errors(input_arguments):
 
 def parse_input_arguments(algorithm_name_choices=("deep-q-learning", "double-deep-q-learning"),
                           environment_name_choices=("cart-pole",),
-                          experiment_choices=range(1, 11, 1), episode_choices=range(1000, 5001, 500),
+                          experiment_choices=range(1, 11, 1), episode_choices=range(500, 5001, 500),
                           seed_choices=range(1, 31, 1)):
   parser = argparse.ArgumentParser(prog="simulate", usage="runs deep reinforcement learning simulations")
   subparsers = parser.add_subparsers(dest="simulation_function", help="simulation function to run")
