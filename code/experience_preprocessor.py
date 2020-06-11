@@ -28,6 +28,7 @@ class ExperiencePreprocessor:
 
   def preprocess_experience_batch(self, observation_batch, action_batch, reward_batch, next_observation_batch,
                                   done_batch):
+    # Transform the given experience batch from numpy arrays to torch tensors.
     preprocessed_observation_batch = torch.from_numpy(observation_batch).to(self._device)
     preprocessed_action_batch = torch.from_numpy(action_batch).to(self._device)
     preprocessed_reward_batch = torch.from_numpy(reward_batch).to(self._device)
@@ -38,6 +39,7 @@ class ExperiencePreprocessor:
             preprocessed_next_observation_batch, preprocessed_done_batch)
 
   def preprocess_observation(self, observation):
+    # Transform the given observation from numpy array to torch tensor.
     preprocessed_observation = torch.from_numpy(observation).float().to(self._device)
 
     return preprocessed_observation

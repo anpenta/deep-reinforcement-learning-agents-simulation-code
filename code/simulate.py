@@ -22,19 +22,21 @@ import simulations
 import utility
 
 input_arguments = utility.parse_input_arguments()
-
 environment = utility.create_environment(input_arguments.environment_name)
-observation_space_size = environment.observation_space.shape[0]
-action_space_size = environment.action_space.n
-agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size)
 
 if input_arguments.simulation_function == "training_episodes":
+  # Create the agent, control the randomness, and run the training episodes.
+  observation_space_size, action_space_size = utility.compute_environment_space_sizes(environment)
+  agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size)
   utility.control_randomness(input_arguments.seed, environment)
   simulations.simulate_training_episodes(agent, environment, input_arguments.episodes,
                                          input_arguments.visual_evaluation_frequency, verbose=True)
 
 elif input_arguments.simulation_function == "training_experiments":
-  experiment_total_rewards = simulations.simulate_training_experiments(agent, environment, input_arguments.experiments,
+  # Run the training experiments, compute summary statistics of the results, and save the plot with the summary
+  # statistics in the given output path.
+  experiment_total_rewards = simulations.simulate_training_experiments(input_arguments.algorithm_name, environment,
+                                                                       input_arguments.experiments,
                                                                        input_arguments.episodes)
   experiment_summary_statistics = utility.compute_summary_statistics(experiment_total_rewards, axis=0)
   utility.save_training_experiment_plot(input_arguments.output_path, *experiment_summary_statistics,

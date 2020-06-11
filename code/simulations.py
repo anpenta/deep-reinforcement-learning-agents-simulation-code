@@ -26,6 +26,8 @@ import numpy as np
 import utility
 
 
+# simulate_visual_test_episode: Simulates a visual test episode where the given agent interacts with the given
+# environment without learning.
 def simulate_visual_test_episode(agent, environment):
   utility.print_line()
   print("Simulating a visual test episode")
@@ -51,6 +53,8 @@ def simulate_visual_test_episode(agent, environment):
   print()
 
 
+# simulate_training_episodes: Simulates the given number of episodes where the given agent interacts with the given
+# environment and learns. Returns the total reward gained from the agent in each episode.
 def simulate_training_episodes(agent, environment, episodes, visual_evaluation_frequency=0, verbose=False):
   utility.print_line()
   print("Simulating {} training episode(s)".format(episodes))
@@ -86,14 +90,21 @@ def simulate_training_episodes(agent, environment, episodes, visual_evaluation_f
   return episode_total_rewards
 
 
-def simulate_training_experiments(agent, environment, experiments, episodes):
+# simulate_training_experiments: Simulates the given number of experiments where each experiment is run with
+# a different random seed. In each experiment, a new agent that uses the given algorithm name is created,
+# interacts with the given environment, and learns for the given number of episodes. Returns the total reward
+# gained from the agent in each episode of each experiment.
+def simulate_training_experiments(algorithm_name, environment, experiments, episodes):
   utility.print_line()
   print("Simulating {} training experiment(s) of {} episode(s) each".format(experiments, episodes))
   utility.print_line()
 
+  observation_space_size, action_space_size = utility.compute_environment_space_sizes(environment)
+
   experiment_total_rewards = np.zeros((experiments, episodes))
   for i in range(experiments):
     print("Simulating experiment: {:>5}/{}".format(i + 1, experiments))
+    agent = utility.create_agent(algorithm_name, observation_space_size, action_space_size)
     utility.control_randomness(i, environment)
     experiment_total_rewards[i] = simulate_training_episodes(agent, environment, episodes)
 

@@ -55,6 +55,13 @@ def create_agent(algorithm_name, observation_space_size, action_space_size):
     return None
 
 
+def compute_environment_space_sizes(environment):
+  observation_space_size = environment.observation_space.shape[0]
+  action_space_size = environment.action_space.n
+
+  return observation_space_size, action_space_size
+
+
 def control_randomness(seed, environment):
   os.environ["PYTHONHASHSEED"] = str(seed)
   random.seed(seed)

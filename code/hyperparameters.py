@@ -24,6 +24,7 @@ import torch
 class Hyperparameters:
 
   def __init__(self):
+    # Initialize shared hyperparameters.
     self._gamma = 0.95
     self._max_epsilon = 0.5
     self._min_epsilon = 0.001
@@ -34,6 +35,7 @@ class Hyperparameters:
     self._target_network_update_frequency = 1000
     self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # Initialize hyperparameters for deep Q-learning with prioritized experience replay.
     self._priority_alpha = 0.6
     self._priority_epsilon = 0.000001
 
