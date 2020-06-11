@@ -27,7 +27,7 @@ import epsilon_decay_process
 import experience_preprocessor
 import hyperparameters
 import neural_networks
-import replay_memory
+import replay_memories
 
 
 class DeepQLearningAgent:
@@ -39,8 +39,8 @@ class DeepQLearningAgent:
     self._epsilon_decay_process = epsilon_decay_process.EpsilonDecayProcess(self._hyperparameters.max_epsilon,
                                                                             self._hyperparameters.min_epsilon,
                                                                             self._hyperparameters.epsilon_decay_steps)
-    self._replay_memory = replay_memory.ReplayMemory(self._hyperparameters.replay_memory_capacity,
-                                                     observation_space_size)
+    self._replay_memory = replay_memories.ReplayMemory(self._hyperparameters.replay_memory_capacity,
+                                                       observation_space_size)
     self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(self._hyperparameters.device)
     self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
                                                self._hyperparameters.device)
@@ -89,8 +89,8 @@ class DeepQLearningAgent:
     self._replay_memory.store_experience(observation, action, reward, next_observation, done)
 
     if len(self._replay_memory) >= self._hyperparameters.batch_size:
-      experiences = self._replay_memory.sample_experience_minibatch(self._hyperparameters.batch_size)
-      preprocessed_experiences = self._experience_preprocessor.preprocess_experience_minibatch(*experiences)
+      experiences = self._replay_memory.sample_experience_batch(self._hyperparameters.batch_size)
+      preprocessed_experiences = self._experience_preprocessor.preprocess_experience_batch(*experiences)
       loss_arguments = self._compute_loss_arguments(*preprocessed_experiences)
       self._optimize_online_network(*loss_arguments)
 
@@ -113,3 +113,37 @@ class DoubleDeepQLearningAgent(DeepQLearningAgent):
     update_targets = (reward_batch + self._hyperparameters.gamma * next_state_values)
 
     return state_action_values, update_targets
+
+
+class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
+
+  def __init__(self, observation_space_size, action_space_size):
+    super().__init__(observation_space_size, action_space_size)
+    self._replay_memory = replay_memories.PrioritizedReplayMemory(self._hyperparameters.replay_memory_capacity,
+                                                                  observation_space_size,
+                                                                  self._hyperparameters.priority_alpha)
+
+  def _compute_batch_priorities(self, state_action_values, update_targets):
+    with torch.no_grad():
+      batch_priorities = torch.abs(state_action_values - update_targets) + self._hyperparameters.priority_epsilon
+
+    return batch_priorities
+
+  def step(self, observation, action, reward, next_observation, done):
+    self._step_counter += 1
+
+    self._replay_memory.store_experience(observation, action, reward, next_observation, done)
+
+    if len(self._replay_memory) >= self._hyperparameters.batch_size:
+      experiences = self._replay_memory.sample_experience_batch(self._hyperparameters.batch_size)
+      preprocessed_experiences = self._experience_preprocessor.preprocess_experience_batch(*experiences)
+      loss_arguments = self._compute_loss_arguments(*preprocessed_experiences)
+      self._optimize_online_network(*loss_arguments)
+
+      batch_priorities = self._compute_batch_priorities(*loss_arguments)
+      self._replay_memory.update_priorities(batch_priorities)
+
+    if self._step_counter % self._hyperparameters.target_network_update_frequency == 0:
+      self._update_target_network()
+
+    self._epsilon_decay_process.decay_epsilon()
