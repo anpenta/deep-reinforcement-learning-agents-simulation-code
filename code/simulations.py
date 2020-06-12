@@ -104,8 +104,8 @@ def simulate_training_experiments(algorithm_name, environment, experiments, epis
   experiment_total_rewards = np.zeros((experiments, episodes))
   for i in range(experiments):
     print("Simulating experiment: {:>5}/{}".format(i + 1, experiments))
-    agent = utility.create_agent(algorithm_name, observation_space_size, action_space_size)
     utility.control_randomness(i, environment)
+    agent = utility.create_agent(algorithm_name, observation_space_size, action_space_size)
     experiment_total_rewards[i] = simulate_training_episodes(agent, environment, episodes)
 
   return experiment_total_rewards

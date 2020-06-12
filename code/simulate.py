@@ -25,10 +25,10 @@ input_arguments = utility.parse_input_arguments()
 environment = utility.create_environment(input_arguments.environment_name)
 
 if input_arguments.simulation_function == "training_episodes":
-  # Compute the environment space sizes, create the agent, control the randomness, and run the training episodes.
+  # Compute the environment space sizes, control the randomness, create the agent, and run the training episodes.
   observation_space_size, action_space_size = utility.compute_environment_space_sizes(environment)
-  agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size)
   utility.control_randomness(input_arguments.seed, environment)
+  agent = utility.create_agent(input_arguments.algorithm_name, observation_space_size, action_space_size)
   simulations.simulate_training_episodes(agent, environment, input_arguments.episodes,
                                          input_arguments.visual_evaluation_frequency, verbose=True)
 
