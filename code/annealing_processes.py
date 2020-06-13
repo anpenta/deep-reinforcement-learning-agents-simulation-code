@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-# Epsilon Decay Process Module
+# Annealing Processes Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Model of an epsilon decay process.
+# Models of annealing processes.
 
 
 class EpsilonDecayProcess:
@@ -33,3 +33,19 @@ class EpsilonDecayProcess:
   @property
   def epsilon(self):
     return self._epsilon
+
+
+class PriorityBetaGrowthProcess:
+
+  def __init__(self, min_priority_beta, max_priority_beta, priority_beta_growth_steps):
+    self._priority_beta_growth = (max_priority_beta - min_priority_beta) / priority_beta_growth_steps
+    self._max_priority_beta = max_priority_beta
+    self._priority_beta = min_priority_beta
+
+  def grow_priority_beta(self):
+    # Grow priority beta linearly.
+    self._priority_beta = min(self._priority_beta + self._priority_beta_growth, self._max_priority_beta)
+
+  @property
+  def priority_beta(self):
+    return self._priority_beta
