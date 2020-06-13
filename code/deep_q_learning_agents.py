@@ -24,7 +24,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import annealing_processes
-import experience_preprocessor
+import preprocessor
 import hyperparameters
 import neural_networks
 import replay_memories
@@ -34,7 +34,6 @@ import replay_memories
 class DeepQLearningAgent:
 
   def __init__(self, observation_space_size, action_space_size):
-    self._observation_space_size = observation_space_size
     self._action_space_size = action_space_size
     self._hyperparameters = hyperparameters.Hyperparameters()
     self._epsilon_decay_process = annealing_processes.EpsilonDecayProcess(self._hyperparameters.max_epsilon,
@@ -42,10 +41,10 @@ class DeepQLearningAgent:
                                                                           self._hyperparameters.epsilon_decay_steps)
     self._replay_memory = replay_memories.ReplayMemory(self._hyperparameters.replay_memory_capacity,
                                                        observation_space_size)
-    self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(self._hyperparameters.device)
-    self._online_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+    self._preprocessor = preprocessor.Preprocessor(self._hyperparameters.device)
+    self._online_network = neural_networks.DQN(observation_space_size, self._action_space_size,
                                                self._hyperparameters.device)
-    self._target_network = neural_networks.DQN(self._observation_space_size, self._action_space_size,
+    self._target_network = neural_networks.DQN(observation_space_size, self._action_space_size,
                                                self._hyperparameters.device)
     self._target_network.eval()
     self._update_target_network()
@@ -82,7 +81,7 @@ class DeepQLearningAgent:
     if np.random.rand() <= self._epsilon_decay_process.epsilon:
       return np.random.randint(self._action_space_size)
     else:
-      preprocessed_observation = self._experience_preprocessor.preprocess_observation(observation)
+      preprocessed_observation = self._preprocessor.preprocess_numpy_array(observation, dtype=torch.float32)
       return self._compute_greedy_action(preprocessed_observation)
 
   def step(self, observation, action, reward, next_observation, done):
@@ -92,7 +91,7 @@ class DeepQLearningAgent:
 
     if len(self._replay_memory) >= self._hyperparameters.batch_size:
       experiences = self._replay_memory.sample_experience_batch(self._hyperparameters.batch_size)
-      preprocessed_experiences = self._experience_preprocessor.preprocess_experience_batch(*experiences)
+      preprocessed_experiences = self._preprocessor.preprocess_experience_batch(*experiences)
       loss_arguments = self._compute_loss_arguments(*preprocessed_experiences)
       self._optimize_online_network(*loss_arguments)
 
@@ -157,7 +156,7 @@ class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
 
     if len(self._replay_memory) >= self._hyperparameters.batch_size:
       experiences = self._replay_memory.sample_experience_batch(self._hyperparameters.batch_size)
-      preprocessed_experiences = self._experience_preprocessor.preprocess_experience_batch(*experiences)
+      preprocessed_experiences = self._preprocessor.preprocess_experience_batch(*experiences)
       loss_arguments = self._compute_loss_arguments(*preprocessed_experiences)
       self._optimize_online_network(*loss_arguments)
 

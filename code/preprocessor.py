@@ -13,33 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-# Experience Preprocessor Module
+# Preprocessor Module
 # Author: Andreas Pentaliotis
 # Email: anpenta01@gmail.com
-# Experience preprocessor for deep reinforcement learning agents.
+# Preprocessor for deep reinforcement learning agents.
 
 import torch
 
 
-class ExperiencePreprocessor:
+class Preprocessor:
 
   def __init__(self, device):
     self._device = device
 
+  def preprocess_numpy_array(self, numpy_array, dtype=None):
+    return torch.from_numpy(numpy_array).to(self._device, dtype=dtype)
+
   def preprocess_experience_batch(self, observation_batch, action_batch, reward_batch, next_observation_batch,
                                   done_batch):
-    # Transform the given experience batch from numpy arrays to torch tensors.
-    preprocessed_observation_batch = torch.from_numpy(observation_batch).to(self._device)
-    preprocessed_action_batch = torch.from_numpy(action_batch).to(self._device)
-    preprocessed_reward_batch = torch.from_numpy(reward_batch).to(self._device)
-    preprocessed_next_observation_batch = torch.from_numpy(next_observation_batch).to(self._device)
-    preprocessed_done_batch = torch.from_numpy(done_batch).to(self._device)
+    # Transform the given experience batch from numpy arrays to torch tensors without changing their dtype.
+    preprocessed_observation_batch = self.preprocess_numpy_array(observation_batch)
+    preprocessed_action_batch = self.preprocess_numpy_array(action_batch)
+    preprocessed_reward_batch = self.preprocess_numpy_array(reward_batch)
+    preprocessed_next_observation_batch = self.preprocess_numpy_array(next_observation_batch)
+    preprocessed_done_batch = self.preprocess_numpy_array(done_batch)
 
     return (preprocessed_observation_batch, preprocessed_action_batch, preprocessed_reward_batch,
             preprocessed_next_observation_batch, preprocessed_done_batch)
-
-  def preprocess_observation(self, observation):
-    # Transform the given observation from numpy array to torch tensor.
-    preprocessed_observation = torch.from_numpy(observation).float().to(self._device)
-
-    return preprocessed_observation
