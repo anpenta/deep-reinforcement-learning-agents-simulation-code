@@ -28,16 +28,19 @@ class Hyperparameters:
     self._gamma = 0.95
     self._max_epsilon = 0.5
     self._min_epsilon = 0.001
-    self._epsilon_decay_steps = 10000
+    self._epsilon_decay_steps = 50000
     self._replay_memory_capacity = 100000
     self._learning_rate = 0.0001
-    self._batch_size = 128
+    self._batch_size = 32
     self._target_network_update_frequency = 1000
     self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize hyperparameters for deep Q-learning with prioritized experience replay.
-    self._priority_alpha = 0.6
-    self._priority_epsilon = 0.000001
+    self._priority_alpha = 0.4
+    self._priority_epsilon = 0.0001
+    self._min_priority_beta = 0.4
+    self._max_priority_beta = 1
+    self._priority_beta_growth_steps = 25000
 
   @property
   def gamma(self):
@@ -82,3 +85,15 @@ class Hyperparameters:
   @property
   def priority_epsilon(self):
     return self._priority_epsilon
+
+  @property
+  def min_priority_beta(self):
+    return self._min_priority_beta
+
+  @property
+  def max_priority_beta(self):
+    return self._max_priority_beta
+
+  @property
+  def priority_beta_growth_steps(self):
+    return self._priority_beta_growth_steps
