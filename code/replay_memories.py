@@ -74,19 +74,27 @@ class PrioritizedReplayMemory(ReplayMemory):
     self._priority_alpha = priority_alpha
     self._priorities = np.zeros(memory_capacity, dtype=np.float32)
     self._max_priority = 1
+    self._probabilities = None
 
   def _sample_batch_indices(self, batch_size):
     # Sample the batch indices using proportional prioritization.
     memory_size = min(self._memory_counter, self._memory_capacity)
     exponentiated_priorities = self._priorities[:memory_size] ** self._priority_alpha
-    probabilities = exponentiated_priorities / np.sum(exponentiated_priorities)
-    self._batch_indices = np.random.choice(memory_size, batch_size, replace=False, p=probabilities)
+    self._probabilities = exponentiated_priorities / np.sum(exponentiated_priorities)
+    self._batch_indices = np.random.choice(memory_size, batch_size, replace=False, p=self._probabilities)
 
   def store_experience(self, observation, action, reward, next_observation, done):
     super().store_experience(observation, action, reward, next_observation, done)
 
     # Assign maximum priority to the given experience because it is new.
     self._priorities[self._memory_index] = self._max_priority
+
+  def compute_normalized_importance_sampling_weights(self, priority_beta):
+    # Compute the normalized importance sampling weights of the most recently sampled experience batch.
+    weights = (self._probabilities.size * self._probabilities[self._batch_indices]) ** -priority_beta
+    normalized_weights = weights / np.max(weights)
+
+    return normalized_weights
 
   def update_priorities(self, batch_priorities):
     self._priorities[self._batch_indices] = batch_priorities
