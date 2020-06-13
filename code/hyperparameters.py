@@ -36,9 +36,9 @@ class Hyperparameters:
     self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize hyperparameters for deep Q-learning with prioritized experience replay.
-    self._priority_alpha = 0.4
-    self._priority_epsilon = 0.0001
-    self._min_priority_beta = 0.4
+    self._priority_alpha = 0.2
+    self._priority_epsilon = 0.00001
+    self._min_priority_beta = 0.6
     self._max_priority_beta = 1
     self._priority_beta_growth_steps = 25000
 
