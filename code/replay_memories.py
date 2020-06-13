@@ -69,16 +69,16 @@ class ReplayMemory:
 
 class PrioritizedReplayMemory(ReplayMemory):
 
-  def __init__(self, memory_capacity, observation_space_size, prioritized_replay_alpha):
+  def __init__(self, memory_capacity, observation_space_size, priority_alpha):
     super().__init__(memory_capacity, observation_space_size)
-    self._prioritized_replay_alpha = prioritized_replay_alpha
+    self._priority_alpha = priority_alpha
     self._priorities = np.zeros(memory_capacity, dtype=np.float32)
     self._max_priority = 1
 
   def _sample_batch_indices(self, batch_size):
     # Sample the batch indices using proportional prioritization.
     memory_size = min(self._memory_counter, self._memory_capacity)
-    exponentiated_priorities = self._priorities[:memory_size] ** self._prioritized_replay_alpha
+    exponentiated_priorities = self._priorities[:memory_size] ** self._priority_alpha
     probabilities = exponentiated_priorities / np.sum(exponentiated_priorities)
     self._batch_indices = np.random.choice(memory_size, batch_size, replace=False, p=probabilities)
 
