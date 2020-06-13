@@ -24,9 +24,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 import annealing_processes
-import preprocessor
 import hyperparameters
 import neural_networks
+import preprocessor
 import replay_memories
 
 
@@ -81,7 +81,7 @@ class DeepQLearningAgent:
     if np.random.rand() <= self._epsilon_decay_process.epsilon:
       return np.random.randint(self._action_space_size)
     else:
-      preprocessed_observation = self._preprocessor.preprocess_numpy_array(observation, dtype=torch.float32)
+      preprocessed_observation = self._preprocessor.preprocess_numpy_array(observation, torch_dtype=torch.float32)
       return self._compute_greedy_action(preprocessed_observation)
 
   def step(self, observation, action, reward, next_observation, done):

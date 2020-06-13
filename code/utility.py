@@ -74,19 +74,19 @@ def control_randomness(seed, environment):
   torch.backends.cudnn.deterministic = True
 
 
-def compute_cumulative_moving_average(value_array):
-  cumulative_sum = np.cumsum(value_array, axis=None)
-  cumulative_length = np.arange(1, value_array.size + 1)
-  cumulative_moving_average = np.divide(cumulative_sum, cumulative_length)
+def compute_cumulative_moving_averages(value_array):
+  cumulative_sums = np.cumsum(value_array, axis=None)
+  cumulative_lengths = np.arange(1, value_array.size + 1)
+  cumulative_moving_averages = np.divide(cumulative_sums, cumulative_lengths)
 
-  return cumulative_moving_average
+  return cumulative_moving_averages
 
 
 def compute_summary_statistics(value_array, axis):
-  mean_values = np.mean(value_array, axis)
-  standard_deviation_values = np.std(value_array, axis)
+  means = np.mean(value_array, axis)
+  standard_deviations = np.std(value_array, axis)
 
-  return mean_values, standard_deviation_values
+  return means, standard_deviations
 
 
 def format_algorithm_name_for_plot(algorithm_name):

@@ -26,12 +26,12 @@ class Preprocessor:
   def __init__(self, device):
     self._device = device
 
-  def preprocess_numpy_array(self, numpy_array, dtype=None):
-    return torch.from_numpy(numpy_array).to(self._device, dtype=dtype)
+  def preprocess_numpy_array(self, numpy_array, torch_dtype=None):
+    return torch.from_numpy(numpy_array).to(self._device, dtype=torch_dtype)
 
   def preprocess_experience_batch(self, observation_batch, action_batch, reward_batch, next_observation_batch,
                                   done_batch):
-    # Transform the given experience batch from numpy arrays to torch tensors without changing their dtype.
+    # Transform the given batches from numpy arrays to torch tensors without changing their dtype.
     preprocessed_observation_batch = self.preprocess_numpy_array(observation_batch)
     preprocessed_action_batch = self.preprocess_numpy_array(action_batch)
     preprocessed_reward_batch = self.preprocess_numpy_array(reward_batch)
