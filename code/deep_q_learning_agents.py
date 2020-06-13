@@ -23,7 +23,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-import epsilon_decay_process
+import annealing_processes
 import experience_preprocessor
 import hyperparameters
 import neural_networks
@@ -37,9 +37,9 @@ class DeepQLearningAgent:
     self._observation_space_size = observation_space_size
     self._action_space_size = action_space_size
     self._hyperparameters = hyperparameters.Hyperparameters()
-    self._epsilon_decay_process = epsilon_decay_process.EpsilonDecayProcess(self._hyperparameters.max_epsilon,
-                                                                            self._hyperparameters.min_epsilon,
-                                                                            self._hyperparameters.epsilon_decay_steps)
+    self._epsilon_decay_process = annealing_processes.EpsilonDecayProcess(self._hyperparameters.max_epsilon,
+                                                                          self._hyperparameters.min_epsilon,
+                                                                          self._hyperparameters.epsilon_decay_steps)
     self._replay_memory = replay_memories.ReplayMemory(self._hyperparameters.replay_memory_capacity,
                                                        observation_space_size)
     self._experience_preprocessor = experience_preprocessor.ExperiencePreprocessor(self._hyperparameters.device)
@@ -125,6 +125,10 @@ class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
 
   def __init__(self, observation_space_size, action_space_size):
     super().__init__(observation_space_size, action_space_size)
+    self._priority_beta_growth_process = annealing_processes.PriorityBetaGrowthProcess(
+      self._hyperparameters.min_priority_beta,
+      self._hyperparameters.max_priority_beta,
+      self._hyperparameters.priority_beta_growth_steps)
     self._replay_memory = replay_memories.PrioritizedReplayMemory(self._hyperparameters.replay_memory_capacity,
                                                                   observation_space_size,
                                                                   self._hyperparameters.priority_alpha)
@@ -134,6 +138,17 @@ class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
       batch_priorities = torch.abs(state_action_values - update_targets) + self._hyperparameters.priority_epsilon
 
     return batch_priorities
+
+  def _optimize_online_network(self, state_action_values, update_targets):
+    # Compute the normalized importance sampling weights and use them to compute the loss.
+    priority_beta = self._priority_beta_growth_process.priority_beta
+    normalized_weights = self._replay_memory.compute_normalized_importance_sampling_weights(priority_beta)
+    normalized_weights = torch.from_numpy(normalized_weights).to(self._hyperparameters.device)
+    loss = (normalized_weights * F.mse_loss(state_action_values, update_targets, reduction="none")).mean()
+
+    self._optimizer.zero_grad()
+    loss.backward()
+    self._optimizer.step()
 
   def step(self, observation, action, reward, next_observation, done):
     self._step_counter += 1
@@ -149,6 +164,9 @@ class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
       # Compute the batch priorities and use them to update the priorities in the prioritized replay memory.
       batch_priorities = self._compute_batch_priorities(*loss_arguments)
       self._replay_memory.update_priorities(batch_priorities)
+
+      # Grow priority beta in each learning step.
+      self._priority_beta_growth_process.grow_priority_beta()
 
     if self._step_counter % self._hyperparameters.target_network_update_frequency == 0:
       self._update_target_network()
