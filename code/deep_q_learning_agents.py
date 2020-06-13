@@ -142,8 +142,8 @@ class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
     # Compute the normalized importance sampling weights and use them to compute the loss.
     priority_beta = self._priority_beta_growth_process.priority_beta
     normalized_weights = self._replay_memory.compute_normalized_importance_sampling_weights(priority_beta)
-    normalized_weights = torch.from_numpy(normalized_weights).to(self._hyperparameters.device)
-    loss = (normalized_weights * F.mse_loss(state_action_values, update_targets, reduction="none")).mean()
+    preprocessed_normalized_weights = self._preprocessor.preprocess_numpy_array(normalized_weights)
+    loss = (preprocessed_normalized_weights * F.mse_loss(state_action_values, update_targets, reduction="none")).mean()
 
     self._optimizer.zero_grad()
     loss.backward()
