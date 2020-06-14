@@ -34,21 +34,18 @@ import replay_memories
 class DeepQLearningAgent:
 
   def __init__(self, observation_space_size, action_space_size):
-    self._action_space_size = action_space_size
     self._hyperparameters = hyperparameters.Hyperparameters()
     self._epsilon_decay_process = annealing_processes.EpsilonDecayProcess(self._hyperparameters.max_epsilon,
                                                                           self._hyperparameters.min_epsilon,
                                                                           self._hyperparameters.epsilon_decay_steps)
-    self._replay_memory = replay_memories.ReplayMemory(self._hyperparameters.replay_memory_capacity,
-                                                       observation_space_size)
+    self._replay_memory = replay_memories.ReplayMemory(self._hyperparameters.memory_capacity, observation_space_size)
     self._preprocessor = preprocessor.Preprocessor(self._hyperparameters.device)
-    self._online_network = neural_networks.DQN(observation_space_size, self._action_space_size,
-                                               self._hyperparameters.device)
-    self._target_network = neural_networks.DQN(observation_space_size, self._action_space_size,
-                                               self._hyperparameters.device)
+    self._online_network = neural_networks.DQN(observation_space_size, action_space_size, self._hyperparameters.device)
+    self._target_network = neural_networks.DQN(observation_space_size, action_space_size, self._hyperparameters.device)
     self._target_network.eval()
     self._update_target_network()
     self._optimizer = optim.Adam(self._online_network.parameters(), lr=self._hyperparameters.learning_rate)
+    self._action_space_size = action_space_size
     self._step_counter = 0
 
   def _update_target_network(self):
@@ -128,7 +125,7 @@ class PrioritizedDeepQLearningAgent(DeepQLearningAgent):
       self._hyperparameters.min_priority_beta,
       self._hyperparameters.max_priority_beta,
       self._hyperparameters.priority_beta_growth_steps)
-    self._replay_memory = replay_memories.PrioritizedReplayMemory(self._hyperparameters.replay_memory_capacity,
+    self._replay_memory = replay_memories.PrioritizedReplayMemory(self._hyperparameters.memory_capacity,
                                                                   observation_space_size,
                                                                   self._hyperparameters.priority_alpha)
 

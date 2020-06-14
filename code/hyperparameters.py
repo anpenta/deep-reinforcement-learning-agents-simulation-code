@@ -29,7 +29,7 @@ class Hyperparameters:
     self._max_epsilon = 0.5
     self._min_epsilon = 0.001
     self._epsilon_decay_steps = 50000
-    self._replay_memory_capacity = 100000
+    self._memory_capacity = 100000
     self._learning_rate = 0.0001
     self._batch_size = 32
     self._target_network_update_frequency = 1000
@@ -59,8 +59,8 @@ class Hyperparameters:
     return self._epsilon_decay_steps
 
   @property
-  def replay_memory_capacity(self):
-    return self._replay_memory_capacity
+  def memory_capacity(self):
+    return self._memory_capacity
 
   @property
   def learning_rate(self):
