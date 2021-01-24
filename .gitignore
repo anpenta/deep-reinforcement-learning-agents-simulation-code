@@ -1,0 +1,11 @@
+# Pycharm project.
+.idea
+
+# Python files.
+code/__pycache__
+
+# Code testing.
+code/test.py
+
+# Output.
+output
